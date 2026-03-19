@@ -1,0 +1,60 @@
+{% extends "emprendedores/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="mb-0">Mensajes Recibidos</h3>
+                <a href="{% url 'panel_usuario' %}" class="btn btn-light">
+                    <i class="bi bi-arrow-left"></i> Volver al Panel
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if mensajes %}
+            <div class="list-group">
+                {% for mensaje in mensajes %}
+                <div class="list-group-item {% if not mensaje.leido %}list-group-item-primary{% endif %}">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ mensaje.asunto }}</h5>
+                        <small>{{ mensaje.fecha_envio|date:"d/m/Y H:i" }}</small>
+                    </div>
+                    <p class="mb-1"><strong>De:</strong> {{ mensaje.remitente.get_full_name }}</p>
+                    <p class="mb-1">{{ mensaje.contenido }}</p>
+                    {% if not mensaje.leido %}
+                    <button class="btn btn-sm btn-outline-primary mt-2" onclick="marcarLeido({{ mensaje.id }})">
+                        Marcar como leído
+                    </button>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="bi bi-envelope-open display-4 text-muted"></i>
+                <p class="mt-3">No tienes mensajes.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function marcarLeido(mensajeId) {
+        fetch(`/mensajes/${mensajeId}/marcar-leido/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload();
+            }
+        });
+    }
+</script>
+{% endblock %}

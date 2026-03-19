@@ -1,0 +1,19 @@
+{% extends "emprendedores/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">Comité Organizador</h2>
+        </div>
+        <div class="card-body">
+            <h4>Miembros del Comité Organizador</h4>
+            <ul>
+                {% for miembro in miembros %}
+                <li>{{ miembro.nombre }} {{ miembro.apellido }} - {{ miembro.cargo }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

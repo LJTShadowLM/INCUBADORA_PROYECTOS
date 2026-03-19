@@ -1,0 +1,76 @@
+{% extends "emprendedores/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Información del Emprendedor: {{ emprendedor.get_full_name }}</h3>
+                </div>
+                <div class="card-body">
+                    <h4 class="mb-3">Datos Personales</h4>
+                    <div class="mb-3">
+                        <strong>Nombre completo:</strong> {{ emprendedor.get_full_name }}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Usuario:</strong> {{ emprendedor.username }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Email:</strong> {{ emprendedor.email }}
+                        </div>
+                    </div>
+
+                    <h4 class="mb-3 mt-4">Proyectos Registrados</h4>
+                    {% if proyectos %}
+                    <div class="list-group">
+                        {% for proyecto in proyectos %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ proyecto.nombre_proyecto }}</h5>
+                                <span class="badge 
+                                    {% if proyecto.estado == 'pendiente' %}bg-secondary
+                                    {% elif proyecto.estado == 'revision' %}bg-info
+                                    {% elif proyecto.estado == 'aceptado' %}bg-success
+                                    {% elif proyecto.estado == 'asignado' %}bg-primary
+                                    {% else %}bg-danger{% endif %}">
+                                    {{ proyecto.get_estado_display }}
+                                </span>
+                            </div>
+                            <p class="mb-1">{{ proyecto.descripcion|truncatechars:100 }}</p>
+                            <small class="text-muted">
+                                Registrado el: {{ proyecto.fecha_registro|date:"d/m/Y" }}
+                                {% if proyecto.tutores.exists %}
+                                | Tutor asignado: {{ proyecto.tutores.first }}
+                                {% endif %}
+                            </small>
+                            <div class="mt-2">
+                                <a href="{% url 'detalle_proyecto' proyecto.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> Ver Detalles
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        Este emprendedor no tiene proyectos registrados.
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'panel_admin' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Volver al panel
+                        </a>
+                        <a href="{% url 'asignar_tutor_emprendedor' emprendedor.id %}" class="btn btn-primary">
+                            <i class="bi bi-person-plus"></i> Asignar Tutor
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

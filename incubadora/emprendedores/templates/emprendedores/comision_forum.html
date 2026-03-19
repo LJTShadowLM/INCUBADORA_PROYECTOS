@@ -1,0 +1,57 @@
+{% extends "emprendedores/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">Comisión del Forum</h2>
+        </div>
+        <div class="card-body">
+            <h4>Comité Organizador</h4>
+            <p>Miembros que presiden el comité general del forum:</p>
+            <ul>
+                {% for miembro in miembros %}
+                    {% if miembro.preside_comite %}
+                    <li>
+                        {{ miembro.nombre }} {{ miembro.apellido }} - {{ miembro.cargo }}
+                        {% if user.is_superuser %}
+                        <a href="{% url 'editar_miembro' miembro.id %}" class="btn btn-sm btn-warning">Editar</a>
+                        <a href="{% url 'eliminar_miembro' miembro.id %}" class="btn btn-sm btn-danger">Eliminar</a>
+                        {% endif %}
+                    </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+
+            <h4>Comisiones</h4>
+            {% for comision in comisiones %}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>{{ comision.nombre }}</h5>
+                    {% if user.is_superuser %}
+                    <a href="{% url 'editar_comision' comision.id %}" class="btn btn-sm btn-warning">Editar</a>
+                    <a href="{% url 'eliminar_comision' comision.id %}" class="btn btn-sm btn-danger">Eliminar</a>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <p><strong>Presidente:</strong> {{ comision.presidente.nombre }} {{ comision.presidente.apellido }} - {{ comision.presidente.cargo }}</p>
+                    <p><strong>Integrantes:</strong></p>
+                    <ul>
+                        {% for integrante in comision.integrantes.all %}
+                        <li>{{ integrante.nombre }} {{ integrante.apellido }} - {{ integrante.cargo }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endfor %}
+
+            {% if user.is_superuser %}
+            <div class="mt-4">
+                <a href="{% url 'agregar_miembro' %}" class="btn btn-primary">Agregar Miembro</a>
+                <a href="{% url 'agregar_comision' %}" class="btn btn-primary">Agregar Comisión</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

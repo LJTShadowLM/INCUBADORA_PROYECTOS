@@ -1,0 +1,25 @@
+{% extends "emprendedores/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0">Eliminar Tutor</h3>
+                </div>
+                <div class="card-body">
+                    <p>¿Estás seguro de que deseas eliminar al tutor <strong>{{ tutor.nombre_completo }}</strong>?</p>
+                    <p>Esta acción no se puede deshacer.</p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                        <a href="{% url 'panel_admin' %}" class="btn btn-secondary">Cancelar</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

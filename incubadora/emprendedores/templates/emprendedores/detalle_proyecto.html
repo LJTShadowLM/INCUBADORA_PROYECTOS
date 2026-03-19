@@ -1,0 +1,109 @@
+{% extends "emprendedores/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">Detalles del Proyecto</h3>
+        </div>
+        
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <h4>{{ proyecto.nombre_proyecto }}</h4>
+                    <span class="badge 
+                        {% if proyecto.estado == 'pendiente' %}bg-secondary
+                        {% elif proyecto.estado == 'revision' %}bg-info
+                        {% elif proyecto.estado == 'aceptado' %}bg-success
+                        {% elif proyecto.estado == 'asignado' %}bg-primary
+                        {% else %}bg-danger{% endif %}">
+                        {{ proyecto.get_estado_display }}
+                    </span>
+                </div>
+                <div class="col-md-4 text-end">
+                    {% if request.user.tutor %}
+                        <a href="{% url 'panel_tutor' %}" class="btn btn-outline-secondary">
+                    {% elif request.user.is_superuser %}
+                    <a href="{% url 'panel_admin' %}" class="btn btn-outline-secondary">
+                    {% else %}
+                   <a href="{% url 'panel_emprendedor' %}" class="btn btn-outline-secondary">
+                   {% endif %}
+                <i class="bi bi-arrow-left"></i> Volver
+                  </a>
+                    
+                 </div>
+            </div>
+            
+            <div class="mb-4">
+                <h5>Descripción</h5>
+                <p>{{ proyecto.descripcion }}</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Información del Emprendedor</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <strong>Nombre:</strong> {{ proyecto.nombre_completo }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Email:</strong> {{ proyecto.email }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Teléfono:</strong> {{ proyecto.telefono|default:"No proporcionado" }}
+                        </li>
+                        {% if proyecto.usuario %}
+                        <li class="list-group-item">
+                            <strong>Usuario:</strong> {{ proyecto.usuario.username }}
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5>Información del Proyecto</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <strong>Sector:</strong> {{ proyecto.get_sector_display }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Fecha de registro:</strong> {{ proyecto.fecha_registro|date:"d/m/Y H:i" }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Archivo:</strong> 
+                            {% if proyecto.archivo_proyecto %}
+                                <a href="{{ proyecto.archivo_proyecto.url }}" target="_blank" class="btn btn-sm btn-outline-primary">Descargar</a>
+                            {% else %}
+                                No subido
+                            {% endif %}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Progreso:</strong> 
+                            <div class="progress mt-1">
+                                <div class="progress-bar" role="progressbar" style="width: {{ proyecto.progreso }}%;" 
+                                     aria-valuenow="{{ proyecto.progreso }}" aria-valuemin="0" aria-valuemax="100">
+                                    {{ proyecto.progreso }}%
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            {% if proyecto.tutores.exists %}
+            <div class="mt-4">
+                <h5>Tutor Asignado</h5>
+                <div class="card">
+                    <div class="card-body">
+                        <h6>{{ proyecto.tutores.first }}</h6>
+                        <p class="mb-1"><strong>Especialidades:</strong> {{ proyecto.tutores.first.especialidades }}</p>
+                        <p class="mb-1"><strong>Experiencia:</strong> {{ proyecto.tutores.first.experiencia|truncatechars:200 }}</p>
+                        <p class="mb-0"><strong>Áreas de tutorización:</strong> {{ proyecto.tutores.first.areas_tutorizar }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

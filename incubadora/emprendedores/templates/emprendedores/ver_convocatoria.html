@@ -1,0 +1,266 @@
+{% extends "emprendedores/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            {% if convocatoria %}
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">{{ convocatoria.titulo }}</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p><strong>Fecha de Inicio:</strong> {{ convocatoria.fecha_inicio|date:"d/m/Y H:i" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Fecha de Cierre:</strong> {{ convocatoria.fecha_cierre|date:"d/m/Y H:i" }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5>Objetivos de la Convocatoria</h5>
+                        <p>{{ convocatoria.objetivos|linebreaks }}</p>
+                    </div>
+                    
+                    {% if user.is_superuser %}
+                    <div class="mt-3">
+                        <a href="{% url 'editar_convocatoria' convocatoria.id %}" class="btn btn-warning">
+                            Editar Convocatoria
+                        </a>
+                        <a href="{% url 'gestion_categorias' convocatoria.id %}" class="btn btn-info">
+                            Gestionar Categorías
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Sección de Requisitos -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h4 class="mb-0">Requisitos de Presentación</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <strong>Para que tu trabajo sea evaluado, DEBES entregar:</strong>
+                    </div>
+                    
+                    <div class="accordion" id="requisitosAccordion">
+                        <!-- Ponencia -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingPonencia">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePonencia" aria-expanded="true" aria-controls="collapsePonencia">
+                                    <strong>Ponencia - Documento Principal</strong>
+                                </button>
+                            </h2>
+                            <div id="collapsePonencia" class="accordion-collapse collapse show" aria-labelledby="headingPonencia" data-bs-parent="#requisitosAccordion">
+                                <div class="accordion-body">
+                                    <p>La ponencia es el documento principal para trabajos que alcanzan la categoría de relevante. Debe contener:</p>
+                                    
+                                    <ol>
+                                        <li><strong>Portada:</strong> Nombre y número del evento, título del trabajo, nombres y apellidos del autor principal y coautores, centro de procedencia, organismo, municipio, provincia y año.</li>
+                                        
+                                        <li><strong>Índice:</strong> Con los títulos y números de páginas.</li>
+                                        
+                                        <li><strong>Resumen:</strong> No más de 250 palabras en tercera persona. Debe contener:
+                                            <ul>
+                                                <li>El problema que se soluciona</li>
+                                                <li>Qué se hizo</li>
+                                                <li>Cómo se hizo</li>
+                                                <li>Dónde se hizo</li>
+                                                <li>Resultados obtenidos</li>
+                                                <li>Dónde puede emplearse</li>
+                                                <li>Ventajas que aporta</li>
+                                            </ul>
+                                        </li>
+                                        
+                                        <li><strong>Palabras claves:</strong> De 3 a 8 términos descriptivos.</li>
+                                        
+                                        <li><strong>Introducción:</strong> Propósito, importancia y conocimiento actual del tema, con citas bibliográficas.</li>
+                                        
+                                        <li><strong>Desarrollo:</strong> Explicación detallada de cómo se ejecutó el trabajo:
+                                            <ul>
+                                                <li>Materiales usados</li>
+                                                <li>Inventivas</li>
+                                                <li>Instrumentos</li>
+                                                <li>Procedimientos</li>
+                                                <li>Tablas y gráficos si son necesarios</li>
+                                            </ul>
+                                        </li>
+                                        
+                                        <li><strong>Valoración económica y aporte social:</strong> Impacto económico, medio ambiental, científico y/o social del trabajo.</li>
+                                        
+                                        <li><strong>Conclusiones y Recomendaciones:</strong> Resumen de resultados y sugerencias para su generalización.</li>
+                                        
+                                        <li><strong>Bibliografía:</strong> Toda la documentación consultada, incluyendo la Base de Datos del Fórum.</li>
+                                        
+                                        <li><strong>Anexos:</strong>
+                                            <ul>
+                                                <li>Planos, croquis, esquemas</li>
+                                                <li>Fotos</li>
+                                                <li>Avales administrativos</li>
+                                                <li>Dictámenes del jurado</li>
+                                                <li>Avales de usuarios</li>
+                                                <li>Premios obtenidos</li>
+                                            </ul>
+                                        </li>
+                                        
+                                        <li><strong>Datos de los autores:</strong>
+                                            <ul>
+                                                <li>Nombres y apellidos completos</li>
+                                                <li>Edad y sexo</li>
+                                                <li>Correo electrónico</li>
+                                                <li>Categoría ocupacional</li>
+                                                <li>Centro de trabajo</li>
+                                                <li>Teléfono</li>
+                                                <li>Otros datos de contacto</li>
+                                            </ul>
+                                        </li>
+                                    </ol>
+                                    
+                                    {% for doc in documentos %}
+                                        {% if doc.tipo == 'ponencia' %}
+                                            <a href="{{ doc.archivo.url }}" class="btn btn-sm btn-outline-primary mt-2" download>
+                                                <i class="bi bi-download"></i> Descargar Plantilla de Ponencia
+                                            </a>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Ficha Técnica -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingFicha">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFicha" aria-expanded="false" aria-controls="collapseFicha">
+                                    <strong>Ficha Técnica - Formulario Obligatorio</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseFicha" class="accordion-collapse collapse" aria-labelledby="headingFicha" data-bs-parent="#requisitosAccordion">
+                                <div class="accordion-body">
+                                    <p>La ponencia debe acompañarse de una Ficha Técnica que debe contener:</p>
+                                    
+                                    <ol>
+                                        <li><strong>Año del Fórum</strong></li>
+                                        <li><strong>Código:</strong> (asignado por la Delegación Provincial del CITMA)</li>
+                                        
+                                        <li><strong>Datos de los autores:</strong> (similares a los de la ponencia)</li>
+                                        
+                                        <li><strong>Porcentaje de participación:</strong> de autores y colaboradores (el total debe ser 100%)</li>
+                                        
+                                        <li><strong>Tipo de aporte:</strong> Especificar si es aporte nuevo o generalización</li>
+                                        
+                                        <li><strong>Programa o dirección principal que beneficia:</strong> debe corresponder con los programas priorizados del país</li>
+                                        
+                                        <li><strong>Impacto de la solución:</strong> beneficio económico y social detallado</li>
+                                        
+                                        <li><strong>Costo de aplicación y beneficio económico:</strong> con cifras concretas</li>
+                                        
+                                        <li><strong>Nivel de generalización:</strong> centro, organismo, municipio, provincia, etc.</li>
+                                        
+                                        <li><strong>Entidades que se benefician:</strong> listado completo</li>
+                                        
+                                        <li><strong>Resumen técnico:</strong> con los mismos requisitos que el resumen de la ponencia</li>
+                                    </ol>
+                                    
+                                    {% for doc in documentos %}
+                                        {% if doc.tipo == 'ficha_tecnica' %}
+                                            <a href="{{ doc.archivo.url }}" class="btn btn-sm btn-outline-primary mt-2" download>
+                                                <i class="bi bi-download"></i> Descargar Formulario de Ficha Técnica
+                                            </a>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Avales -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingAvales">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAvales" aria-expanded="false" aria-controls="collapseAvales">
+                                    <strong>Avales Obligatorios</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseAvales" class="accordion-collapse collapse" aria-labelledby="headingAvales" data-bs-parent="#requisitosAccordion">
+                                <div class="accordion-body">
+                                    <p>Según el alcance de la ponencia, se deben anexar los siguientes avales (certificaciones o respaldos) firmados y sellados:</p>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <ul>
+                                                <li>Aval del centro donde se aplicó el trabajo, firmado por la dirección administrativa</li>
+                                                <li>Aval del Fórum de base (dictamen del jurado que lo analizó en el centro)</li>
+                                                <li>Aval del Consejo Técnico Asesor</li>
+                                                <li>Aval del equipo de colaboradores técnicos o científicos del jurado</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <ul>
+                                                <li>Aval del organismo administrativo al que pertenece la entidad</li>
+                                                <li>Aval del usuario del centro que se beneficia con la solución</li>
+                                                <li>Aval de institución científica o entidad profesional</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    
+                                    {% for doc in documentos %}
+                                        {% if doc.tipo == 'aval' %}
+                                            <a href="{{ doc.archivo.url }}" class="btn btn-sm btn-outline-primary mt-2 me-2" download>
+                                                <i class="bi bi-download"></i> Descargar Formulario de Aval
+                                            </a>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sección de Categorías y Reconocimientos -->
+            {% if convocatoria.categorias.all %}
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">Categorías y Reconocimientos</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for categoria in convocatoria.categorias.all %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">{{ categoria.nombre }}</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>{{ categoria.descripcion }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h5>Reconocimientos Especiales</h5>
+                        <ul>
+                            <li><strong>Mención:</strong> Para trabajos con alto valor creativo.</li>
+                            <li><strong>Destacado:</strong> Para soluciones con impacto demostrable en un área.</li>
+                            <li><strong>Relevante:</strong> Para innovaciones con alto impacto económico o social, que serán propuestas para el Premio Provincial.</li>
+                            <li><strong>Premios Especiales:</strong> Se otorgarán reconocimientos a la mejor solución joven (BTJ), la innovación más generalizada, y otros.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% else %}
+            <div class="alert alert-info">
+                <h4>No hay convocatorias activas en este momento</h4>
+                <p>Vuelve a consultar más adelante para conocer las próximas convocatorias del Forum de Ciencias Técnicas e Innovación.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

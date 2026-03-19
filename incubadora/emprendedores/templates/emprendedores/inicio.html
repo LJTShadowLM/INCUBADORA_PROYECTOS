@@ -1,0 +1,123 @@
+{% extends "emprendedores/base.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section" style="background: linear-gradient(135deg, #0066cc 0%, #004080 100%); color: white; padding: 5rem 0; text-align: center;">
+    <div class="container">
+        <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Impulsando Innovación Tecnológica en Santiago de Cuba</h1>
+        <p class="lead" style="font-size: 1.25rem; max-width: 700px; margin: 0 auto 2rem;">
+            Convierte tu idea en realidad con el apoyo de expertos de Desoft. Desde la concepción hasta el mercado, te acompañamos en cada paso.
+        </p>
+        
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            {% if user.is_authenticated %}
+                {% if user.groups.filter.name == 'Emprendedor' %}
+                    <a href="{% url 'registro' %}" class="btn btn-light btn-lg" style="font-weight: bold; padding: 0.75rem 2rem;">
+                        ¡Registra tu proyecto ahora!
+                    </a>
+                {% endif %}
+            {% else %}
+                <a href="{% url 'registro_usuario' tipo_usuario='emprendedor' %}" class="btn btn-light btn-lg" style="font-weight: bold; padding: 0.75rem 2rem;">
+                    Regístrate como emprendedor
+                </a>
+            {% endif %}
+            <!-- Nuevo botón para el forum evento -->
+            <a href="{% url 'forum_evento' %}" class="btn btn-outline-light btn-lg" style="font-weight: bold; padding: 0.75rem 2rem;">
+                Forum Evento de Ciencias Técnicas e Innovación
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Resto del contenido permanece igual -->
+<section class="container my-5">
+    <h2 class="text-center mb-5">Fases de Nuestra Incubadora</h2>
+    <div class="row g-4">
+        <!-- Etapa 1 -->
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Pre-Seed (Idea)</h5>
+                </div>
+                <div class="card-body">
+                    <p>Desarrollo del Producto Mínimo Viable (MVP) que convierte el concepto en algo tangible.</p>
+                </div>
+            </div>
+        </div>
+        <!-- Etapa 2 -->
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Seed (Semilla)</h5>
+                </div>
+                <div class="card-body">
+                    <p>Validación del MVP con clientes reales y preparación del pitch deck para inversionistas.</p>
+                </div>
+            </div>
+        </div>
+        <!-- Etapa 3 -->
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Early Stage</h5>
+                </div>
+                <div class="card-body">
+                    <p>Mejora del producto con retroalimentación y construcción de relaciones comerciales estratégicas.</p>
+                </div>
+            </div>
+        </div>
+        <!-- Etapa 4 -->
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Growth Stage</h5>
+                </div>
+                <div class="card-body">
+                    <p>Expansión rápida con contrataciones estratégicas y manejo de flujo de caja positivo.</p>
+                </div>
+            </div>
+        </div>
+        <!-- Etapa 5 -->
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Expansión</h5>
+                </div>
+                <div class="card-body">
+                    <p>Ampliación a nuevos mercados geográficos o segmentos con apoyo de grandes empresas.</p>
+                </div>
+            </div>
+        </div>
+        <!-- Etapa 6 -->
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Exit (Salida)</h5>
+                </div>
+                <div class="card-body">
+                    <p>Venta de la startup mediante acciones, OPI o absorción por compañías más grandes.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Formulario de Contacto -->
+<section class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <h2 class="mb-4">Accede a tu panel</h2>
+            <p>Si ya tienes una cuenta, inicia sesión para acceder a tu panel personalizado.</p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <a href="{% url 'login' %}" class="btn btn-primary btn-lg me-md-2">
+                    <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                </a>
+                <a href="{% url 'registro_usuario' tipo_usuario='emprendedor' %}" class="btn btn-outline-primary btn-lg">
+                    <i class="bi bi-person-plus"></i> Registrarse como emprendedor
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

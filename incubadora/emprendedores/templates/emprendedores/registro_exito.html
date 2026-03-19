@@ -1,0 +1,24 @@
+{% extends "emprendedores/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">¡Solicitud Enviada!</h3>
+                </div>
+                <div class="card-body">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                    <h4 class="mt-3">Gracias por tu solicitud</h4>
+                    <p class="lead">Hemos recibido tu proyecto y lo revisaremos cuidadosamente.</p>
+                    <p>Te contactaremos al correo proporcionado en los próximos días.</p>
+                    <a href="{% url 'inicio' %}" class="btn btn-primary mt-3">
+                        Volver al inicio
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

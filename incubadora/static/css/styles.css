@@ -1,0 +1,370 @@
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+}
+
+.container {
+    max-width: 1400px;
+}
+
+.card {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    margin-bottom: 25px;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    padding: 1.2rem 1.5rem;
+    font-weight: 600;
+}
+
+.list-group-item {
+    padding: 1.2rem 1.5rem;
+    border-left: none;
+    border-right: none;
+    transition: background-color 0.2s;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+.badge {
+    padding: 0.5em 0.75em;
+    font-weight: 600;
+}
+
+.btn {
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.btn-light {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+}
+
+.btn-light:hover {
+    background-color: #e9ecef;
+}
+
+.badge.bg-secondary { background-color: #6c757d; }
+.badge.bg-info { background-color: #0dcaf0; }
+.badge.bg-success { background-color: #198754; }
+.badge.bg-primary { background-color: #0d6efd; }
+.badge.bg-danger { background-color: #dc3545; }
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 0.8rem 1rem;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.4rem;
+}
+
+.navbar-brand i {
+    margin-right: 8px;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    border: 1px solid #ced4da;
+    transition: border-color 0.2s;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.alert {
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.bi {
+    margin-right: 5px;
+}
+
+/* Estilos para panel de tutor */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    text-align: center;
+}
+
+.calendar-weekdays {
+    display: contents;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.calendar-weekdays > div {
+    padding: 5px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+.calendar-days {
+    display: contents;
+}
+
+.calendar-day {
+    position: relative;
+    min-height: 80px;
+    padding: 5px;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    background-color: white;
+    font-size: 0.9rem;
+}
+
+.calendar-day.current-day {
+    background-color: #e7f1ff;
+    border-color: #86b7fe;
+    font-weight: bold;
+}
+
+.calendar-event {
+    font-size: 0.7rem;
+    padding: 2px 5px;
+    margin-top: 3px;
+    border-radius: 3px;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.timeline {
+    position: relative;
+    padding-left: 20px;
+    margin-left: 10px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: #dee2e6;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-point {
+    position: absolute;
+    left: -26px;
+    top: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #0d6efd;
+    border: 2px solid white;
+    z-index: 1;
+}
+
+.timeline-content {
+    background: white;
+    padding: 15px;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.timeline-event {
+    position: relative;
+    padding: 5px 0;
+    padding-left: 15px;
+}
+
+.timeline-event::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #adb5bd;
+}
+
+.event-date {
+    font-weight: 600;
+    color: #495057;
+}
+
+.event-desc {
+    display: block;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #0d6efd;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.task-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+    font-size: 0.85rem;
+}
+
+/* Estilos para FullCalendar */
+.fc .fc-toolbar-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.fc .fc-button {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.9rem;
+    border-radius: 8px;
+}
+
+.fc-event {
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+.fc-daygrid-day-number {
+    font-weight: 500;
+}
+
+/* Estilos para modales */
+.modal-backdrop {
+    z-index: 1040 !important;
+}
+
+.modal {
+    z-index: 1050 !important;
+}
+
+.modal-header.bg-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Estilos para botones de acción en tablas */
+.table .btn-group .btn {
+    margin-right: 5px;
+}
+
+/* Estilos para el modal de rechazo */
+.modal-content .alert-warning {
+    margin-bottom: 1rem;
+}
+
+/* Estilos para la sección de resumen */
+.card.border-start {
+    border-left-width: 4px !important;
+}
+
+/* Estilos para progress bars */
+.progress {
+    border-radius: 10px;
+    height: 10px;
+}
+
+.progress-bar {
+    border-radius: 10px;
+}
+
+/* Estilos para la tabla de proyectos */
+.table th {
+    font-weight: 600;
+    background-color: #f8f9fa;
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+    .card-body .row > div {
+        margin-bottom: 15px;
+    }
+    
+    .table-responsive {
+        font-size: 0.9rem;
+    }
+    
+    .btn-sm {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.8rem;
+    }
+    
+    .fc-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .fc-toolbar-chunk {
+        margin-bottom: 10px;
+    }
+}
+
+/* Estilos para el modal de términos y condiciones */
+#terminosModal .modal-body {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+/* Estilos para iconos en botones */
+.btn .bi {
+    margin-right: 5px;
+}
+
+/* Estilos para los checkboxes de tareas */
+.form-check-input:checked {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+/* Estilos para el estado de los proyectos */
+.badge[class*="bg-"] {
+    color: white;
+}
+
+/* Estilos para el modal de eventos */
+#eventoModal .form-label {
+    font-weight: 500;
+}
+
+/* Estilos para el modal de mensajes */
+#mensajeModal textarea {
+    resize: vertical;
+    min-height: 120px;
+}

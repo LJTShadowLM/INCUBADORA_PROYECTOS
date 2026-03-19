@@ -1,0 +1,84 @@
+{% extends "emprendedores/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Gestión de Documentos Plantilla</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Formulario para agregar documentos -->
+                    <h4>Agregar Nuevo Documento</h4>
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.nombre.id_for_label }}" class="form-label">{{ form.nombre.label }}</label>
+                            {{ form.nombre }}
+                            {% if form.nombre.errors %}
+                                <div class="text-danger">{{ form.nombre.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.tipo.id_for_label }}" class="form-label">{{ form.tipo.label }}</label>
+                            {{ form.tipo }}
+                            {% if form.tipo.errors %}
+                                <div class="text-danger">{{ form.tipo.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.archivo.id_for_label }}" class="form-label">{{ form.archivo.label }}</label>
+                            {{ form.archivo }}
+                            {% if form.archivo.errors %}
+                                <div class="text-danger">{{ form.archivo.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.descripcion.id_for_label }}" class="form-label">{{ form.descripcion.label }}</label>
+                            {{ form.descripcion }}
+                            {% if form.descripcion.errors %}
+                                <div class="text-danger">{{ form.descripcion.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Agregar Documento</button>
+                    </form>
+
+                    <hr>
+
+                    <!-- Lista de documentos existentes -->
+                    <h4>Documentos Existentes</h4>
+                    <div class="list-group">
+                        {% for documento in documentos %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ documento.nombre }}</h5>
+                                <span class="badge bg-info">{{ documento.get_tipo_display }}</span>
+                            </div>
+                            <p class="mb-1">{{ documento.descripcion }}</p>
+                            <small>Actualizado: {{ documento.fecha_actualizacion|date:"d/m/Y H:i" }}</small>
+                            <div class="mt-2">
+                                <a href="{{ documento.archivo.url }}" class="btn btn-sm btn-outline-primary" download>Descargar</a>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="list-group-item">
+                            <p class="mb-0">No hay documentos plantilla registrados.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mt-3">
+                        <a href="{% url 'forum_evento' %}" class="btn btn-secondary">Volver al Forum</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

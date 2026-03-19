@@ -1,0 +1,102 @@
+{% extends "emprendedores/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Gestión de Correos para Notificaciones</h3>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <h4 class="mb-3">Agregar Nuevo Correo</h4>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-8">
+                                {{ form.email.label_tag }}
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger">{{ form.email.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.activo.label_tag }}
+                                <div class="form-check mt-2">
+                                    {{ form.activo }}
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">
+                            <i class="bi bi-save"></i> Guardar Configuración
+                        </button>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <h4 class="mb-3">Correos Configurados</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Correo Electrónico</th>
+                                    <th>Estado</th>
+                                    <th>Fecha de Creación</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for config in configuraciones %}
+                                <tr>
+                                    <td>{{ config.email }}</td>
+                                    <td>
+                                        {% if config.activo %}
+                                            <span class="badge bg-success">Activo</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Inactivo</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ config.fecha_creacion|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        <form method="post" action="{% url 'eliminar_configuracion_correo' config.id %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de que quieres eliminar esta configuración?')">
+                                                <i class="bi bi-trash"></i> Eliminar
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No hay correos configurados</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="alert alert-info mt-4">
+                        <h5>Información:</h5>
+                        <ul>
+                            <li>Las notificaciones de nuevas inscripciones se enviarán al correo marcado como "Activo"</li>
+                            <li>Solo un correo puede estar activo a la vez</li>
+                            <li>Al marcar un nuevo correo como activo, se desactivarán automáticamente los demás</li>
+                            <li>Los correos incluirán todos los documentos adjuntos por los participantes</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+[file content end]

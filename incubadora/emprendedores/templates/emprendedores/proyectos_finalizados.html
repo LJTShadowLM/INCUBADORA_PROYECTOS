@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proyectos Finalizados</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">Proyectos Finalizados</h1>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Nombre del Proyecto</th>
+                        <th>Descripción</th>
+                        <th>Sector</th>
+                        <th>Fecha de Registro</th>
+                        <th>Progreso</th>
+                        <th>Tutor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for proyecto in proyectos %}
+                    <tr>
+                        <td>{{ proyecto.nombre_proyecto }}</td>
+                        <td>{{ proyecto.descripcion|truncatewords:20 }}</td>
+                        <td>{{ proyecto.get_sector_display }}</td>
+                        <td>{{ proyecto.fecha_registro|date:"d/m/Y" }}</td>
+                        <td>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: {{ proyecto.progreso }}%;" 
+                                     aria-valuenow="{{ proyecto.progreso }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    {{ proyecto.progreso }}%
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if proyecto.tutor %}
+                                {{ proyecto.tutor.usuario.get_full_name }}
+                            {% else %}
+                                Sin asignar
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <i class="bi bi-inbox display-4 d-block text-muted mb-3"></i>
+                            <h5 class="text-muted">No hay proyectos finalizados aún</h5>
+                            <p class="text-muted">Los proyectos que finalicen aparecerán aquí</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'forum_evento' %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Volver al Forum
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

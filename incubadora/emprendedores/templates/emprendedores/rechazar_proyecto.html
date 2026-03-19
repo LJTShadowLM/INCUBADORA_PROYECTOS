@@ -1,0 +1,67 @@
+{% extends "emprendedores/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0">Rechazar Proyecto: {{ proyecto.nombre_proyecto }}</h3>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                    <div class="messages">
+                        {% for message in messages %}
+                        <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %}">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="alert alert-danger">
+                        <h5><i class="bi bi-exclamation-triangle-fill"></i> Advertencia</h5>
+                        <p class="mb-0">
+                            Está a punto de rechazar permanentemente este proyecto. 
+                            Esta acción no se puede deshacer. Se enviará una notificación al 
+                            administrador y al emprendedor con la razón proporcionada.
+                        </p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5>Información del Proyecto</h5>
+                        <div class="card">
+                            <div class="card-body">
+                                <p><strong>Emprendedor:</strong> {{ proyecto.nombre_completo }}</p>
+                                <p><strong>Email:</strong> {{ proyecto.email }}</p>
+                                <p><strong>Descripción:</strong> {{ proyecto.descripcion|truncatewords:30 }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="razon_rechazo" class="form-label">Razón del rechazo *</label>
+                            <textarea name="razon_rechazo" class="form-control" rows="5" 
+                                      placeholder="Explique detalladamente por qué está rechazando este proyecto. Esta información será enviada al emprendedor y al administrador."
+                                      required minlength="10"></textarea>
+                            <div class="form-text">Mínimo 10 caracteres. Sea claro y específico.</div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="bi bi-x-circle-fill"></i> Confirmar Rechazo
+                            </button>
+                            <a href="{% url 'panel_tutor' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar y Volver
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

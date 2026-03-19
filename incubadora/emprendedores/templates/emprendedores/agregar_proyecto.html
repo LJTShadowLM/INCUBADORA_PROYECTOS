@@ -1,0 +1,85 @@
+{% extends "emprendedores/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Registrar Nuevo Proyecto</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <h4 class="mb-3">Información del Proyecto</h4>
+                        <div class="mb-3">
+                            {{ form.nombre_proyecto.label_tag }}
+                            {{ form.nombre_proyecto }}
+                            {% if form.nombre_proyecto.errors %}
+                                <div class="text-danger">{{ form.nombre_proyecto.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.descripcion.label_tag }}
+                            {{ form.descripcion }}
+                            {% if form.descripcion.errors %}
+                                <div class="text-danger">{{ form.descripcion.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.sector.label_tag }}
+                            {{ form.sector }}
+                            {% if form.sector.errors %}
+                                <div class="text-danger">{{ form.sector.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.archivo_proyecto.label_tag }}
+                            {{ form.archivo_proyecto }}
+                            {% if form.archivo_proyecto.errors %}
+                                <div class="text-danger">{{ form.archivo_proyecto.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <h4 class="mb-3 mt-4">Información de Contacto</h4>
+                        <div class="mb-3">
+                            {{ form.nombre_completo.label_tag }}
+                            {{ form.nombre_completo }}
+                            {% if form.nombre_completo.errors %}
+                                <div class="text-danger">{{ form.nombre_completo.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.email.label_tag }}
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger">{{ form.email.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.telefono.label_tag }}
+                                {{ form.telefono }}
+                                {% if form.telefono.errors %}
+                                    <div class="text-danger">{{ form.telefono.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 py-2">
+                            <i class="bi bi-send-fill"></i> Registrar Proyecto
+                        </button>
+                        <a href="{% url 'panel_emprendedor' %}" class="btn btn-secondary w-100 mt-2">Cancelar</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

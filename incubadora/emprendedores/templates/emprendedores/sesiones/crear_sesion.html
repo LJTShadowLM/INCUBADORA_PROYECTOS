@@ -1,0 +1,144 @@
+<!-- templates/emprendedores/sesiones/crear_sesion.html -->
+{% extends "emprendedores/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-calendar-plus me-2"></i>
+                        Proponer Nueva Sesión de Mentoría
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        Proyecto: <strong>{{ proyecto.nombre_proyecto }}</strong> |
+                        Emprendedor: <strong>{{ proyecto.nombre_completo }}</strong>
+                    </p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.fecha_propuesta.label_tag }}
+                                    {{ form.fecha_propuesta }}
+                                    {% if form.fecha_propuesta.errors %}
+                                        <div class="text-danger">{{ form.fecha_propuesta.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.duracion.label_tag }}
+                                    {{ form.duracion }}
+                                    {% if form.duracion.errors %}
+                                        <div class="text-danger">{{ form.duracion.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.formato.label_tag }}
+                                    {{ form.formato }}
+                                    {% if form.formato.errors %}
+                                        <div class="text-danger">{{ form.formato.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.tipo.label_tag }}
+                                    {{ form.tipo }}
+                                    {% if form.tipo.errors %}
+                                        <div class="text-danger">{{ form.tipo.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="virtual-fields" class="form-field" style="display: none;">
+                            <div class="mb-3">
+                                {{ form.enlace_virtual.label_tag }}
+                                {{ form.enlace_virtual }}
+                                {% if form.enlace_virtual.errors %}
+                                    <div class="text-danger">{{ form.enlace_virtual.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div id="presencial-fields" class="form-field" style="display: none;">
+                            <div class="mb-3">
+                                {{ form.direccion_presencial.label_tag }}
+                                {{ form.direccion_presencial }}
+                                {% if form.direccion_presencial.errors %}
+                                    <div class="text-danger">{{ form.direccion_presencial.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.objetivo.label_tag }}
+                            {{ form.objetivo }}
+                            {% if form.objetivo.errors %}
+                                <div class="text-danger">{{ form.objetivo.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.agenda.label_tag }}
+                            {{ form.agenda }}
+                            {% if form.agenda.errors %}
+                                <div class="text-danger">{{ form.agenda.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.materiales_requeridos.label_tag }}
+                            {{ form.materiales_requeridos }}
+                            {% if form.materiales_requeridos.errors %}
+                                <div class="text-danger">{{ form.materiales_requeridos.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            {{ form.es_material_obligatorio }}
+                            {{ form.es_material_obligatorio.label_tag }}
+                            {% if form.es_material_obligatorio.errors %}
+                                <div class="text-danger">{{ form.es_material_obligatorio.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" name="guardar_borrador" value="true" class="btn btn-secondary">
+                                <i class="bi bi-save"></i> Guardar como Borrador
+                            </button>
+                            <button type="submit" name="enviar_propuesta" value="true" class="btn btn-primary">
+                                <i class="bi bi-send"></i> Enviar Propuesta
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Mostrar/ocultar campos según el formato seleccionado
+    document.getElementById('id_formato').addEventListener('change', function() {
+        const formato = this.value;
+        document.getElementById('virtual-fields').style.display = formato === 'virtual' ? 'block' : 'none';
+        document.getElementById('presencial-fields').style.display = formato === 'presencial' ? 'block' : 'none';
+    });
+    
+    // Disparar el evento al cargar la página
+    document.getElementById('id_formato').dispatchEvent(new Event('change'));
+</script>
+{% endblock %}

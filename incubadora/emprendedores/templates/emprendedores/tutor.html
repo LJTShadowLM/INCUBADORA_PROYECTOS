@@ -1,0 +1,678 @@
+{% extends "emprendedores/base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<!-- FullCalendar CSS -->
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+<style>
+    .fc .fc-toolbar-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+    .fc .fc-button {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.9rem;
+    }
+    .fc-event {
+        cursor: pointer;
+        font-size: 0.85rem;
+        padding: 2px 4px;
+    }
+    /* Estilos para modales fijos */
+    .modal-backdrop {
+        z-index: 1040 !important;
+    }
+    .modal {
+        z-index: 1050 !important;
+    }
+    /* Estilo adicional para separar botones */
+    .btn-action {
+        margin-right: 4px;
+        margin-bottom: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Columna principal -->
+        <div class="col-lg-8">
+            <!-- Resumen de actividad -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-speedometer2 me-2"></i>Resumen de Actividad</h5>
+                    <span class="badge bg-light text-dark">{{ tutor.proyectos_actuales }} Proyectos</span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-start border-success border-4">
+                                <div class="card-body">
+                                    <h6 class="card-title text-muted">Proyectos</h6>
+                                    <h3 class="card-text">{{ tutor.proyectos_actuales }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-start border-info border-4">
+                                <div class="card-body">
+                                    <h6 class="card-title text-muted">Sesiones Pendientes</h6>
+                                    <h3 class="card-text">{{ sesiones_pendientes.count }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-start border-warning border-4">
+                                <div class="card-body">
+                                    <h6 class="card-title text-muted">Tareas Completadas</h6>
+                                    <h3 class="card-text"><span id="contador-completadas">{{ tareas_completadas }}</span>/<span id="contador-total">{{ tareas_total }}</span></h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-start border-danger border-4">
+                                <div class="card-body">
+                                    <h6 class="card-title text-muted">Horas Invertidas</h6>
+                                    <h3 class="card-text">{{ horas_totales }}h</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title text-primary">Progreso Promedio</h6>
+                                    <div class="progress mb-2" style="height: 20px;">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ progreso_promedio }}%;" 
+                                             aria-valuenow="{{ progreso_promedio }}" aria-valuemin="0" aria-valuemax="100">{{ progreso_promedio }}%</div>
+                                    </div>
+                                    <small class="text-muted">Promedio de todos los proyectos actuales</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title text-primary">Evaluaciones Recientes</h6>
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            <span class="display-4 text-warning">{{ promedio_evaluaciones|floatformat:1 }}</span>
+                                        </div>
+                                        <div>
+                                            {% for i in "12345"|make_list %}
+                                                {% if forloop.counter <= promedio_evaluaciones %}
+                                                    <i class="bi bi-star-fill text-warning"></i>
+                                                {% else %}
+                                                    <i class="bi bi-star text-warning"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                            <div class="mt-1"><small>Promedio: {{ promedio_evaluaciones|floatformat:1 }}/5.0</small></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gestión de Proyectos -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-folder me-2"></i>Gestión de Proyectos</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="nav nav-tabs mb-3" id="proyectosTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="listado-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#listado" type="button" role="tab">
+                                Proyectos Actuales
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content" id="proyectosTabContent">
+                        <div class="tab-pane fade show active" id="listado" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Proyecto</th>
+                                            <th>Estado</th>
+                                            <th>Progreso</th>
+                                            <th>Emprendedor</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for proyecto in proyectos %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url 'detalle_proyecto' proyecto.id %}" class="text-decoration-none">
+                                                    <strong>{{ proyecto.nombre_proyecto }}</strong>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <form method="post" action="{% url 'cambiar_estado_proyecto_tutor' proyecto.id %}" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <select name="nuevo_estado" class="form-select form-select-sm" onchange="this.form.submit()">
+                                                        <option value="pendiente" {% if proyecto.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                                                        <option value="revision" {% if proyecto.estado == 'revision' %}selected{% endif %}>En revisión</option>
+                                                        <option value="asignado" {% if proyecto.estado == 'asignado' %}selected{% endif %}>En proceso</option>
+                                                        <option value="finalizado" {% if proyecto.estado == 'finalizado' %}selected{% endif %}>Finalizado</option>
+                                                    </select>
+                                                </form>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="progress me-2" style="width: 100px; height: 10px;">
+                                                        <div class="progress-bar" role="progressbar" 
+                                                             style="width: {{ proyecto.progreso }}%;" 
+                                                             aria-valuenow="{{ proyecto.progreso }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                                    </div>
+                                                    <span>{{ proyecto.progreso }}%</span>
+                                                </div>
+                                            </td>
+                                            <td>{{ proyecto.nombre_completo }}</td>
+                                            <td>
+                                                <div class="d-flex flex-wrap">
+                                                    <a href="{% url 'detalle_proyecto' proyecto.id %}" 
+                                                       class="btn btn-sm btn-outline-primary btn-action">
+                                                        <i class="bi bi-eye"></i> Ver
+                                                    </a>
+                                                    <!-- Botón Enviar Mensaje -->
+                                                    <button type="button" class="btn btn-sm btn-outline-primary btn-action" 
+                                                            data-bs-toggle="modal" data-bs-target="#mensajeModal{{ proyecto.id }}">
+                                                        <i class="bi bi-envelope"></i> Enviar Mensaje
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-info btn-action" data-bs-toggle="modal" data-bs-target="#eventoModal{{ proyecto.id }}">
+                                                        <i class="bi bi-calendar-plus"></i> Evento
+                                                    </button>
+                                                    <!-- Botón de Rechazar Proyecto -->
+                                                    <button class="btn btn-sm btn-outline-danger btn-action" data-bs-toggle="modal" data-bs-target="#rechazoModal{{ proyecto.id }}">
+                                                        <i class="bi bi-x-circle"></i> Rechazar
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Calendario -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-calendar-event me-2"></i>Calendario</h5>
+                </div>
+                <div class="card-body">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+
+            <!-- Sesiones de Mentoría -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-chat-square-text me-2"></i>Próximas Sesiones</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for sesion in sesiones_proximas %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ sesion.get_tipo_display }}</h6>
+                                <small>{{ sesion.fecha_propuesta|date:"d/m H:i" }}</small>
+                            </div>
+                            <p class="mb-1">{{ sesion.proyecto.nombre_proyecto }}</p>
+                            <small class="text-muted">{{ sesion.duracion }} minutos | {{ sesion.get_formato_display }}</small>
+                            <div class="mt-2">
+                                <a href="{% url 'detalle_sesion' sesion.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> Ver detalles
+                                </a>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center text-muted py-3">
+                            No hay sesiones programadas
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sesiones que requieren atención -->
+            {% if sesiones_requieren_atencion %}
+            <div class="card shadow mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Requieren Atención</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for sesion in sesiones_requieren_atencion %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1 text-danger">Faltan materiales</h6>
+                                <small>{{ sesion.fecha_propuesta|date:"d/m H:i" }}</small>
+                            </div>
+                            <p class="mb-1">{{ sesion.proyecto.nombre_proyecto }}</p>
+                            <small class="text-muted">{{ sesion.materiales_requeridos|truncatewords:5 }}</small>
+                            <div class="mt-2">
+                                <a href="{% url 'detalle_sesion' sesion.id %}" class="btn btn-sm btn-outline-warning">
+                                    <i class="bi bi-eye"></i> Revisar
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Tareas Pendientes -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-list-task me-2"></i>Tareas Pendientes</h5>
+                    <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#crearTareaModal">
+                        <i class="bi bi-plus"></i> Nueva
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="list-group" id="lista-pendientes">
+                        {% for tarea in tareas_pendientes %}
+                        <div class="list-group-item" id="tarea-item-{{ tarea.id }}"
+                             data-titulo="{{ tarea.titulo }}"
+                             data-proyecto="{{ tarea.proyecto.nombre_proyecto }}">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="task{{ tarea.id }}" 
+                                       onchange="marcarTareaCompletada({{ tarea.id }})" {% if tarea.completada %}checked{% endif %}>
+                                <label class="form-check-label" for="task{{ tarea.id }}">
+                                    {{ tarea.titulo }}
+                                </label>
+                                <div class="task-meta mt-1">
+                                    <small class="text-muted d-block">
+                                        <i class="bi bi-folder2 me-1"></i>{{ tarea.proyecto.nombre_proyecto }}
+                                    </small>
+                                    <small class="text-muted">Vence: {{ tarea.fecha_limite|date:"d/m/Y" }}</small>
+                                    <span class="badge bg-{% if tarea.prioridad == 'alta' %}danger{% elif tarea.prioridad == 'media' %}warning{% else %}info{% endif %} ms-1">
+                                        {{ tarea.get_prioridad_display }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center text-muted py-3" id="sin-pendientes">
+                            No hay tareas pendientes
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tareas Completadas -->
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-check2-all me-2"></i>Tareas Completadas
+                        <span class="badge bg-light text-success ms-2" id="badge-completadas">{{ tareas_completadas }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group" id="lista-completadas">
+                        {% for tarea in tareas_completadas_lista %}
+                        <div class="list-group-item" id="tarea-item-{{ tarea.id }}"
+                             data-titulo="{{ tarea.titulo }}"
+                             data-proyecto="{{ tarea.proyecto.nombre_proyecto }}">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="task{{ tarea.id }}"
+                                       onchange="marcarTareaCompletada({{ tarea.id }})" checked>
+                                <label class="form-check-label text-muted" for="task{{ tarea.id }}">
+                                    <del>{{ tarea.titulo }}</del>
+                                </label>
+                                <div class="task-meta mt-1">
+                                    <small class="text-muted d-block">
+                                        <i class="bi bi-folder2 me-1"></i>{{ tarea.proyecto.nombre_proyecto }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center text-muted py-3" id="sin-completadas">
+                            No hay tareas completadas aún
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal para enviar mensajes (UNO POR PROYECTO) -->
+{% for proyecto in proyectos %}
+<div class="modal fade" id="mensajeModal{{ proyecto.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Enviar Mensaje</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'enviar_mensaje' %}">
+                {% csrf_token %}
+                <input type="hidden" name="tipo_destinatario" value="emprendedor">
+                <input type="hidden" name="destinatario_id" value="{{ proyecto.usuario.id }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Para:</label>
+                        <p class="form-control-plaintext fw-bold">{{ proyecto.nombre_completo }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label for="asunto{{ proyecto.id }}" class="form-label">Asunto</label>
+                        <input type="text" name="asunto" class="form-control" id="asunto{{ proyecto.id }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="contenido{{ proyecto.id }}" class="form-label">Mensaje</label>
+                        <textarea name="contenido" class="form-control" id="contenido{{ proyecto.id }}" rows="4" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Enviar Mensaje</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Modal para rechazar proyecto (UNO POR PROYECTO) -->
+{% for proyecto in proyectos %}
+<div class="modal fade" id="rechazoModal{{ proyecto.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Rechazar Proyecto: {{ proyecto.nombre_proyecto }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'rechazar_proyecto' proyecto.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <strong>Advertencia:</strong> Esta acción no se puede deshacer. Se notificará al administrador y al emprendedor.
+                    </div>
+                    <div class="mb-3">
+                        <label for="razon_rechazo{{ proyecto.id }}" class="form-label">Razón del rechazo *</label>
+                        <textarea name="razon_rechazo" class="form-control" id="razon_rechazo{{ proyecto.id }}" 
+                                  rows="4" required minlength="10" 
+                                  placeholder="Explique detalladamente por qué está rechazando este proyecto..."></textarea>
+                        <div class="form-text">Mínimo 10 caracteres. Esta información se enviará al emprendedor y administrador.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Confirmar Rechazo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Modal para enviar mensaje al administrador (SOLO UNO) -->
+<div class="modal fade" id="mensajeAdminModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Enviar Mensaje al Administrador</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'enviar_mensaje' %}">
+                {% csrf_token %}
+                <input type="hidden" name="tipo_destinatario" value="administrador">
+                <input type="hidden" name="destinatario_id" value="1"> <!-- Asumiendo que el admin tiene ID 1 -->
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Para:</label>
+                        <p class="form-control-plaintext fw-bold">Administrador</p>
+                    </div>
+                    <div class="mb-3">
+                        <label for="asunto_admin" class="form-label">Asunto</label>
+                        <input type="text" name="asunto" class="form-control" id="asunto_admin" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="contenido_admin" class="form-label">Mensaje</label>
+                        <textarea name="contenido" class="form-control" id="contenido_admin" rows="4" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Enviar Mensaje</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Botón flotante para enviar mensaje al administrador -->
+<div class="position-fixed bottom-0 end-0 p-3">
+    <button type="button" class="btn btn-primary btn-lg rounded-circle" data-bs-toggle="modal" data-bs-target="#mensajeAdminModal">
+        <i class="bi bi-envelope"></i>
+    </button>
+</div>
+
+<!-- Modal para crear tarea manual -->
+<div class="modal fade" id="crearTareaModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Nueva Tarea</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'crear_tarea_tutor' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Proyecto *</label>
+                        <select name="proyecto_id" class="form-select" required>
+                            <option value="">-- Seleccione un proyecto --</option>
+                            {% for proyecto in proyectos %}
+                            <option value="{{ proyecto.id }}">{{ proyecto.nombre_proyecto }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Título *</label>
+                        <input type="text" name="titulo" class="form-control" required placeholder="Ej: Revisar documentación del proyecto">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea name="descripcion" class="form-control" rows="3" placeholder="Detalles de la tarea..."></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Prioridad</label>
+                            <select name="prioridad" class="form-select">
+                                <option value="alta">Alta</option>
+                                <option value="media" selected>Media</option>
+                                <option value="baja">Baja</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Vence en (días)</label>
+                            <input type="number" name="dias_limite" class="form-control" value="7" min="1" max="365">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-1"></i> Crear Tarea
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- FullCalendar JS -->
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/es.js'></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'es',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            events: [
+                {% for evento in eventos_calendario %}
+                {
+                    title: '{{ evento.title }}',
+                    start: '{{ evento.start }}',
+                    {% if evento.end %}
+                    end: '{{ evento.end }}',
+                    {% endif %}
+                    color: '{{ evento.color }}',
+                    url: '{{ evento.url }}'
+                },
+                {% endfor %}
+            ],
+            eventClick: function(info) {
+                if (info.event.url) {
+                    window.open(info.event.url);
+                    info.jsEvent.preventDefault();
+                }
+            }
+        });
+        calendar.render();
+    });
+
+    // Lee el token CSRF desde la cookie que Django siempre pone en el navegador.
+    // Es más confiable que {{ csrf_token }} dentro de JS.
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function marcarTareaCompletada(tareaId) {
+        // Usamos FormData para enviar el CSRF token en el cuerpo del POST,
+        // que es la forma más compatible con Django.
+        var formData = new FormData();
+        formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+
+        fetch('/tareas/' + tareaId + '/completar/', {
+            method: 'POST',
+            body: formData
+        })
+        .then(function(response) {
+            if (!response.ok) {
+                throw new Error('HTTP error: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(function(data) {
+            if (data.status !== 'success') {
+                console.error('Error del servidor:', data.message);
+                return;
+            }
+
+            var item = document.getElementById('tarea-item-' + tareaId);
+            var listaPendientes = document.getElementById('lista-pendientes');
+            var listaCompletadas = document.getElementById('lista-completadas');
+            var contadorCompletadas = document.getElementById('contador-completadas');
+            var badgeCompletadas = document.getElementById('badge-completadas');
+            var completadas = parseInt(contadorCompletadas.textContent);
+
+            if (data.completada) {
+                var titulo = item.getAttribute('data-titulo');
+                var proyecto = item.getAttribute('data-proyecto');
+
+                item.remove();
+
+                var sinCompletadas = document.getElementById('sin-completadas');
+                if (sinCompletadas) sinCompletadas.remove();
+
+                var nuevoItem = document.createElement('div');
+                nuevoItem.className = 'list-group-item';
+                nuevoItem.id = 'tarea-item-' + tareaId;
+                nuevoItem.setAttribute('data-titulo', titulo);
+                nuevoItem.setAttribute('data-proyecto', proyecto);
+                nuevoItem.innerHTML =
+                    '<div class="form-check">' +
+                        '<input class="form-check-input" type="checkbox" id="task' + tareaId + '"' +
+                               ' onchange="marcarTareaCompletada(' + tareaId + ')" checked>' +
+                        '<label class="form-check-label text-muted" for="task' + tareaId + '">' +
+                            '<del>' + titulo + '</del>' +
+                        '</label>' +
+                        '<div class="task-meta mt-1">' +
+                            '<small class="text-muted d-block">' +
+                                '<i class="bi bi-folder2 me-1"></i>' + proyecto +
+                            '</small>' +
+                        '</div>' +
+                    '</div>';
+                listaCompletadas.appendChild(nuevoItem);
+
+                completadas += 1;
+                contadorCompletadas.textContent = completadas;
+                badgeCompletadas.textContent = completadas;
+
+                if (listaPendientes.querySelectorAll('.list-group-item').length === 0) {
+                    var msg = document.createElement('div');
+                    msg.className = 'text-center text-muted py-3';
+                    msg.id = 'sin-pendientes';
+                    msg.textContent = 'No hay tareas pendientes';
+                    listaPendientes.appendChild(msg);
+                }
+
+            } else {
+                item.remove();
+                completadas -= 1;
+                contadorCompletadas.textContent = completadas;
+                badgeCompletadas.textContent = completadas;
+
+                if (listaCompletadas.querySelectorAll('.list-group-item').length === 0) {
+                    var msg2 = document.createElement('div');
+                    msg2.className = 'text-center text-muted py-3';
+                    msg2.id = 'sin-completadas';
+                    msg2.textContent = 'No hay tareas completadas aún';
+                    listaCompletadas.appendChild(msg2);
+                }
+                location.reload();
+            }
+        })
+        .catch(function(error) {
+            console.error('Error al marcar tarea:', error);
+            // Si falla, recarga la página para que el estado sea consistente
+            location.reload();
+        });
+    }
+</script>
+{% endblock %}

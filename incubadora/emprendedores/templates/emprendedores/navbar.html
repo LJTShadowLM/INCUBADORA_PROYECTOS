@@ -1,0 +1,73 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'inicio' %}">
+            <i class="bi bi-lightbulb"></i> Incubadora Desoft
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'inicio' %}">
+                        <i class="bi bi-house"></i> Inicio
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'forum_evento' %}">
+                        <i class="bi bi-calendar-event"></i> Forum Evento
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'participar_forum' %}">
+                        <i class="bi bi-pencil-square"></i> Participar en el Forum
+                    </a>
+                </li>
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        {% if user.is_superuser %}
+                            <a class="nav-link" href="{% url 'panel_admin' %}">
+                                <i class="bi bi-gear"></i> Panel Administración
+                            </a>
+                        {% else %}
+                            <a class="nav-link" href="{% url 'panel_usuario' %}">
+                                <i class="bi bi-speedometer2"></i> Mi Panel
+                            </a>
+                        {% endif %}
+                    </li>
+                    {% if user.groups.filter.name == 'Emprendedor' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'registro' %}">
+                                <i class="bi bi-plus-circle"></i> Registrar Proyecto
+                            </a>
+                        </li>
+                    {% endif %}
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'registro' %}">
+                            <i class="bi bi-plus-circle"></i> Registro
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+            
+            <div class="d-flex">
+                {% if user.is_authenticated %}
+                    <span class="navbar-text me-3">
+                        <i class="bi bi-person"></i> Hola, {{ user.first_name|default:user.username }}
+                    </span>
+                    <a href="{% url 'logout' %}" class="btn btn-outline-light">
+                        <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-outline-light me-2">
+                        <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                    </a>
+                    <a href="{% url 'registro_usuario' tipo_usuario='emprendedor' %}" class="btn btn-light">
+                        <i class="bi bi-person-plus"></i> Registrarse
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>

@@ -1,0 +1,45 @@
+{% extends "emprendedores/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">¡Inscripción Exitosa!</h3>
+                </div>
+                <div class="card-body">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                    <h4 class="mt-3">Gracias por inscribirse en el Forum</h4>
+                    
+                    <div class="alert alert-info mt-4">
+                        <h5>Número de Expediente:</h5>
+                        <h3 class="text-primary">{{ participante.numero_expediente }}</h3>
+                        <p class="mb-0">Guarde este número para consultar el estado de su inscripción</p>
+                    </div>
+                    
+                    <p class="lead">Hemos recibido su documentación y será evaluada en los próximos días.</p>
+                    
+                    <div class="mt-4">
+                        <h5>Próximos pasos:</h5>
+                        <ol class="list-group list-group-numbered">
+                            <li class="list-group-item">Evaluación de documentación (15-30 días)</li>
+                            <li class="list-group-item">Notificación de resultados vía email</li>
+                            <li class="list-group-item">Preparación para la exposición oral (si es seleccionado)</li>
+                        </ol>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{% url 'ver_estado_inscripcion' %}?numero_expediente={{ participante.numero_expediente }}" class="btn btn-primary me-2">
+                            <i class="bi bi-search"></i> Ver estado de mi inscripción
+                        </a>
+                        <a href="{% url 'forum_evento' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Volver al Forum
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends "emprendedores/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Registro de Proyecto</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <h4 class="mb-3">Información Personal</h4>
+                        <div class="mb-3">
+                            {{ form.nombre_completo.label_tag }}
+                            {{ form.nombre_completo }}
+                            {% if form.nombre_completo.errors %}
+                                <div class="text-danger">{{ form.nombre_completo.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.email.label_tag }}
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger">{{ form.email.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.telefono.label_tag }}
+                                {{ form.telefono }}
+                                {% if form.telefono.errors %}
+                                    <div class="text-danger">{{ form.telefono.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <h4 class="mb-3 mt-4">Información del Proyecto</h4>
+                        <div class="mb-3">
+                            {{ form.nombre_proyecto.label_tag }}
+                            {{ form.nombre_proyecto }}
+                            {% if form.nombre_proyecto.errors %}
+                                <div class="text-danger">{{ form.nombre_proyecto.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.descripcion.label_tag }}
+                            {{ form.descripcion }}
+                            <small class="text-muted">Mínimo 50 caracteres</small>
+                            {% if form.descripcion.errors %}
+                                <div class="text-danger">{{ form.descripcion.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.sector.label_tag }}
+                            {{ form.sector }}
+                            {% if form.sector.errors %}
+                                <div class="text-danger">{{ form.sector.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.archivo_proyecto.label_tag }}
+                            {{ form.archivo_proyecto }}
+                            {% if form.archivo_proyecto.errors %}
+                                <div class="text-danger">{{ form.archivo_proyecto.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-check mb-4">
+                            {{ form.terminos }}
+                            <label class="form-check-label" for="{{ form.terminos.id_for_label }}">
+                                Acepto los <a href="#" data-bs-toggle="modal" data-bs-target="#terminosModal">términos y condiciones</a>
+                            </label>
+                            {% if form.terminos.errors %}
+                                <div class="text-danger">{{ form.terminos.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 py-2">
+                            <i class="bi bi-send-fill"></i> Enviar Solicitud
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Términos -->
+<div class="modal fade" id="terminosModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Términos y Condiciones</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Texto de términos y condiciones aquí...</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

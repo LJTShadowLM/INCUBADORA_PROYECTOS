@@ -1,0 +1,92 @@
+[file name]: detalle_sesion.html
+[file content begin]
+{% extends "emprendedores/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">Detalles de la Sesión de Mentoría</h3>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <h4>{{ sesion.proyecto.nombre_proyecto }}</h4>
+                    <span class="badge bg-info">{{ sesion.get_estado_display }}</span>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="{% url 'listar_sesiones_proyecto' sesion.proyecto.id %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver a sesiones
+                    </a>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Información de la Sesión</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <strong>Tipo:</strong> {{ sesion.get_tipo_display }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Formato:</strong> {{ sesion.get_formato_display }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Fecha propuesta:</strong> {{ sesion.fecha_propuesta|date:"d/m/Y H:i" }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Duración:</strong> {{ sesion.duracion }} minutos
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Objetivo:</strong> {{ sesion.objetivo }}
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5>Detalles Adicionales</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <strong>Agenda:</strong> {{ sesion.agenda|default:"No especificada" }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Materiales requeridos:</strong> {{ sesion.materiales_requeridos|default:"Ninguno" }}
+                        </li>
+                        {% if sesion.formato == 'virtual' and sesion.enlace_virtual %}
+                        <li class="list-group-item">
+                            <strong>Enlace virtual:</strong> 
+                            <a href="{{ sesion.enlace_virtual }}" target="_blank">{{ sesion.enlace_virtual }}</a>
+                        </li>
+                        {% endif %}
+                        {% if sesion.formato == 'presencial' and sesion.direccion_presencial %}
+                        <li class="list-group-item">
+                            <strong>Dirección:</strong> {{ sesion.direccion_presencial }}
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            
+            {% if sesion.archivos.exists %}
+            <div class="mt-4">
+                <h5>Archivos Adjuntos</h5>
+                <div class="list-group">
+                    {% for archivo in sesion.archivos.all %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>{{ archivo.archivo.name }}</span>
+                            <a href="{{ archivo.archivo.url }}" class="btn btn-sm btn-outline-primary" download>
+                                <i class="bi bi-download"></i> Descargar
+                            </a>
+                        </div>
+                        <small class="text-muted">Subido por {{ archivo.subido_por.get_full_name }} el {{ archivo.fecha_subido|date:"d/m/Y H:i" }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+[file content end]

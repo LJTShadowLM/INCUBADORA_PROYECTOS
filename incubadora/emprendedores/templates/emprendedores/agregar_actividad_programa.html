@@ -1,0 +1,40 @@
+{% extends "emprendedores/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Agregar Actividad al Programa</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="horario" class="form-label">Horario</label>
+                            <input type="text" class="form-control" id="horario" name="horario" required placeholder="Ej: 9:00 - 10:00">
+                        </div>
+                        <div class="mb-3">
+                            <label for="actividad" class="form-label">Actividad</label>
+                            <input type="text" class="form-control" id="actividad" name="actividad" required placeholder="Ej: Inauguración">
+                        </div>
+                        <div class="mb-3">
+                            <label for="responsable" class="form-label">Responsable</label>
+                            <input type="text" class="form-control" id="responsable" name="responsable" required placeholder="Ej: Comisión 1">
+                        </div>
+                        <div class="mb-3">
+                            <label for="trabajo" class="form-label">Trabajo a Presentar (Opcional)</label>
+                            <input type="text" class="form-control" id="trabajo" name="trabajo" placeholder="Ej: Sistema de Gestión - Juan Pérez">
+                        </div>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'programa_forum' %}" class="btn btn-secondary me-md-2">Cancelar</a>
+                            <button type="submit" class="btn btn-primary">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

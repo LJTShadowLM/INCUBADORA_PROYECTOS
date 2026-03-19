@@ -1,0 +1,40 @@
+{% extends "emprendedores/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">Agregar Comisión</h2>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="nombre" class="form-label">Nombre de la comisión</label>
+                    <input type="text" class="form-control" id="nombre" name="nombre" required>
+                </div>
+                <div class="mb-3">
+                    <label for="presidente" class="form-label">Presidente</label>
+                    <select class="form-select" id="presidente" name="presidente" required>
+                        <option value="">Seleccione un presidente</option>
+                        {% for miembro in miembros %}
+                        <option value="{{ miembro.id }}">{{ miembro.nombre }} {{ miembro.apellido }} - {{ miembro.cargo }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="integrantes" class="form-label">Integrantes</label>
+                    <select multiple class="form-select" id="integrantes" name="integrantes">
+                        {% for miembro in miembros %}
+                        <option value="{{ miembro.id }}">{{ miembro.nombre }} {{ miembro.apellido }} - {{ miembro.cargo }}</option>
+                        {% endfor %}
+                    </select>
+                    <small class="form-text text-muted">Mantenga presionada la tecla Ctrl para seleccionar múltiples integrantes.</small>
+                </div>
+                <button type="submit" class="btn btn-primary">Agregar</button>
+                <a href="{% url 'comision_forum' %}" class="btn btn-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

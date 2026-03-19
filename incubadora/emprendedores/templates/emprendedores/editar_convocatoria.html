@@ -1,0 +1,64 @@
+{% extends "emprendedores/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Editar Convocatoria: {{ convocatoria.titulo }}</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.titulo.id_for_label }}" class="form-label">{{ form.titulo.label }}</label>
+                            {{ form.titulo }}
+                            {% if form.titulo.errors %}
+                                <div class="text-danger">{{ form.titulo.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.fecha_inicio.id_for_label }}" class="form-label">{{ form.fecha_inicio.label }}</label>
+                                {{ form.fecha_inicio }}
+                                {% if form.fecha_inicio.errors %}
+                                    <div class="text-danger">{{ form.fecha_inicio.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.fecha_cierre.id_for_label }}" class="form-label">{{ form.fecha_cierre.label }}</label>
+                                {{ form.fecha_cierre }}
+                                {% if form.fecha_cierre.errors %}
+                                    <div class="text-danger">{{ form.fecha_cierre.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.objetivos.id_for_label }}" class="form-label">{{ form.objetivos.label }}</label>
+                            {{ form.objetivos }}
+                            {% if form.objetivos.errors %}
+                                <div class="text-danger">{{ form.objetivos.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            {{ form.activa }}
+                            <label class="form-check-label" for="{{ form.activa.id_for_label }}">{{ form.activa.label }}</label>
+                            {% if form.activa.errors %}
+                                <div class="text-danger">{{ form.activa.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Actualizar Convocatoria</button>
+                        <a href="{% url 'gestion_convocatoria' %}" class="btn btn-secondary">Cancelar</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

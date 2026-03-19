@@ -1,0 +1,83 @@
+{% extends "emprendedores/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Agregar Problema al Banco</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.año.label_tag }}
+                                {{ form.año }}
+                                {% if form.año.errors %}
+                                    <div class="text-danger">{{ form.año.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.numero.label_tag }}
+                                {{ form.numero }}
+                                {% if form.numero.errors %}
+                                    <div class="text-danger">{{ form.numero.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.objetivo.label_tag }}
+                            {{ form.objetivo }}
+                            {% if form.objetivo.errors %}
+                                <div class="text-danger">{{ form.objetivo.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.problema.label_tag }}
+                            {{ form.problema }}
+                            {% if form.problema.errors %}
+                                <div class="text-danger">{{ form.problema.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.ponencia_consultar.label_tag }}
+                            {{ form.ponencia_consultar }}
+                            {% if form.ponencia_consultar.errors %}
+                                <div class="text-danger">{{ form.ponencia_consultar.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.prioridad.label_tag }}
+                                {{ form.prioridad }}
+                                {% if form.prioridad.errors %}
+                                    <div class="text-danger">{{ form.prioridad.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check mt-4">
+                                    {{ form.resuelto }}
+                                    <label class="form-check-label" for="{{ form.resuelto.id_for_label }}">
+                                        ¿Problema resuelto?
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 py-2">
+                            <i class="bi bi-save"></i> Guardar Problema
+                        </button>
+                        <a href="{% url 'gestionar_banco_problemas' %}" class="btn btn-secondary w-100 mt-2">Cancelar</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

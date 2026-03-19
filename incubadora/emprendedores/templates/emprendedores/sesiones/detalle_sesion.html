@@ -1,0 +1,369 @@
+<!-- templates/emprendedores/sesiones/detalle_sesion.html -->
+{% extends "emprendedores/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Header de la sesión -->
+            <div class="card shadow mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center
+                    {% if sesion.estado == 'confirmada' %}bg-success text-white
+                    {% elif sesion.estado == 'cancelada' or sesion.estado == 'no_show' %}bg-danger text-white
+                    {% elif sesion.estado == 'realizada' %}bg-info text-white
+                    {% else %}bg-primary text-white{% endif %}">
+                    <h4 class="mb-0">
+                        <i class="bi bi-calendar-event me-2"></i>
+                        Sesión de Mentoría - {{ sesion.get_tipo_display }}
+                    </h4>
+                    <span class="badge bg-light text-dark">
+                        {{ sesion.get_estado_display }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Información de la Sesión</h5>
+                            <p><strong>Proyecto:</strong> {{ sesion.proyecto.nombre_proyecto }}</p>
+                            <p><strong>Fecha y hora:</strong> {{ sesion.fecha_propuesta|date:"d/m/Y H:i" }}</p>
+                            <p><strong>Duración:</strong> {{ sesion.duracion }} minutos</p>
+                            <p><strong>Formato:</strong> {{ sesion.get_formato_display }}</p>
+                            {% if sesion.enlace_virtual %}
+                                <p><strong>Enlace:</strong> <a href="{{ sesion.enlace_virtual }}" target="_blank">{{ sesion.enlace_virtual }}</a></p>
+                            {% endif %}
+                            {% if sesion.direccion_presencial %}
+                                <p><strong>Dirección:</strong> {{ sesion.direccion_presencial }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Participantes</h5>
+                            <p><strong>Tutor:</strong> {{ sesion.creada_por.get_full_name|default:sesion.creada_por.username }}</p>
+                            <p><strong>Emprendedor:</strong> {{ sesion.proyecto.nombre_completo }}</p>
+                            
+                            <h5 class="mt-4">Estado</h5>
+                            <p><strong>Creada por:</strong> {{ sesion.creada_por.get_full_name|default:sesion.creada_por.username }}</p>
+                            <p><strong>Fecha creación:</strong> {{ sesion.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                            {% if sesion.contador_reprogramaciones > 0 %}
+                                <p><strong>Reprogramaciones:</strong> {{ sesion.contador_reprogramaciones }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <h5>Objetivo</h5>
+                            <p>{{ sesion.objetivo }}</p>
+                            
+                            {% if sesion.agenda %}
+                                <h5>Agenda</h5>
+                                <p>{{ sesion.agenda|linebreaks }}</p>
+                            {% endif %}
+                            
+                            {% if sesion.materiales_requeridos %}
+                                <h5>Materiales Requeridos</h5>
+                                <p>{{ sesion.materiales_requeridos|linebreaks }}</p>
+                                {% if sesion.es_material_obligatorio %}
+                                    <span class="badge bg-warning text-dark">Material obligatorio</span>
+                                {% endif %}
+                            {% endif %}
+                            
+                            {% if sesion.minuta %}
+                                <h5>Minuta de la Sesión</h5>
+                                <div class="border p-3 bg-light">
+                                    {{ sesion.minuta|linebreaks }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Archivos de la sesión -->
+            {% if sesion.archivos.exists %}
+            <div class="card shadow mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-files me-2"></i>Archivos de la Sesión</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for archivo in sesion.archivos.all %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ archivo.archivo.name }}</h6>
+                                    <small class="text-muted">
+                                        Subido por {{ archivo.subido_por.get_full_name|default:archivo.subido_por.username }} 
+                                        el {{ archivo.fecha_subido|date:"d/m/Y H:i" }}
+                                    </small>
+                                    {% if archivo.es_material_obligatorio %}
+                                        <span class="badge bg-warning text-dark ms-2">Obligatorio</span>
+                                    {% endif %}
+                                </div>
+                                <a href="{{ archivo.archivo.url }}" class="btn btn-sm btn-outline-primary" download>
+                                    <i class="bi bi-download"></i> Descargar
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Auditoría de eventos -->
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Historial de Eventos</h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        {% for evento in eventos %}
+                        <div class="timeline-item">
+                            <div class="timeline-point"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">{{ evento.get_accion_display }}</h6>
+                                <p class="mb-1 text-muted">{{ evento.detalles }}</p>
+                                <small class="text-muted">
+                                    Por {{ evento.usuario.get_full_name|default:evento.usuario.username }} 
+                                    el {{ evento.timestamp|date:"d/m/Y H:i" }}
+                                </small>
+                                {% if evento.estado_anterior and evento.estado_nuevo %}
+                                <div class="mt-2">
+                                    <span class="badge bg-secondary">{{ evento.estado_anterior }}</span>
+                                    <i class="bi bi-arrow-right mx-2"></i>
+                                    <span class="badge bg-primary">{{ evento.estado_nuevo }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted">No hay eventos registrados para esta sesión.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Acciones disponibles -->
+            {% if acciones_disponibles %}
+            <div class="card shadow mb-4">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0"><i class="bi bi-lightning me-2"></i>Acciones Disponibles</h5>
+                </div>
+                <div class="card-body">
+                    {% if 'responder' in acciones_disponibles %}
+                    <button class="btn btn-primary w-100 mb-2" data-bs-toggle="modal" data-bs-target="#responderModal">
+                        <i class="bi bi-reply"></i> Responder a la Sesión
+                    </button>
+                    {% endif %}
+                    
+                    {% if 'proponer_horarios' in acciones_disponibles %}
+                    <button class="btn btn-info w-100 mb-2" data-bs-toggle="modal" data-bs-target="#propuestaModal">
+                        <i class="bi bi-clock"></i> Proponer Horarios
+                    </button>
+                    {% endif %}
+                    
+                    {% if 'subir_archivo' in acciones_disponibles %}
+                    <button class="btn btn-secondary w-100 mb-2" data-bs-toggle="modal" data-bs-target="#archivoModal">
+                        <i class="bi bi-upload"></i> Subir Archivo
+                    </button>
+                    {% endif %}
+                    
+                    {% if 'marcar_realizada' in acciones_disponibles %}
+                    <button class="btn btn-success w-100 mb-2" data-bs-toggle="modal" data-bs-target="#minutaModal">
+                        <i class="bi bi-check-circle"></i> Marcar como Realizada
+                    </button>
+                    {% endif %}
+                    
+                    {% if 'editar' in acciones_disponibles %}
+                    <a href="#" class="btn btn-outline-primary w-100 mb-2">
+                        <i class="bi bi-pencil"></i> Editar Sesión
+                    </a>
+                    {% endif %}
+                    
+                    {% if 'cancelar' in acciones_disponibles %}
+                    <button class="btn btn-outline-danger w-100 mb-2">
+                        <i class="bi bi-x-circle"></i> Cancelar Sesión
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Propuestas de horario -->
+            {% if sesion.propuestas_horario.exists %}
+            <div class="card shadow mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-clock me-2"></i>Propuestas de Horario</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for propuesta in sesion.propuestas_horario.all %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ propuesta.fecha_propuesta|date:"d/m/Y H:i" }}</h6>
+                                    <small class="text-muted">
+                                        Propuesto por {{ propuesta.propuesto_por.get_full_name|default:propuesta.propuesto_por.username }}
+                                    </small>
+                                    {% if propuesta.mensaje %}
+                                    <p class="mb-0 mt-1"><small>{{ propuesta.mensaje }}</small></p>
+                                    {% endif %}
+                                </div>
+                                {% if not propuesta.aceptada and sesion.estado == 'pendiente_confirmacion' %}
+                                <form method="post" action="{% url 'aceptar_propuesta_horario' propuesta.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-success">
+                                        <i class="bi bi-check"></i> Aceptar
+                                    </button>
+                                </form>
+                                {% elif propuesta.aceptada %}
+                                <span class="badge bg-success">Aceptada</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Información del proyecto -->
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-folder me-2"></i>Información del Proyecto</h5>
+                </div>
+                <div class="card-body">
+                    <h6>{{ sesion.proyecto.nombre_proyecto }}</h6>
+                    <p class="mb-1"><strong>Emprendedor:</strong> {{ sesion.proyecto.nombre_completo }}</p>
+                    <p class="mb-1"><strong>Email:</strong> {{ sesion.proyecto.email }}</p>
+                    <p class="mb-1"><strong>Teléfono:</strong> {{ sesion.proyecto.telefono|default:"No proporcionado" }}</p>
+                    <p class="mb-0"><strong>Estado:</strong> 
+                        <span class="badge 
+                            {% if sesion.proyecto.estado == 'pendiente' %}bg-secondary
+                            {% elif sesion.proyecto.estado == 'revision' %}bg-info
+                            {% elif sesion.proyecto.estado == 'aceptado' %}bg-success
+                            {% elif sesion.proyecto.estado == 'asignado' %}bg-primary
+                            {% else %}bg-danger{% endif %}">
+                            {{ sesion.proyecto.get_estado_display }}
+                        </span>
+                    </p>
+                    <div class="mt-3">
+                        <a href="{% url 'detalle_proyecto' sesion.proyecto.id %}" class="btn btn-sm btn-outline-primary w-100">
+                            <i class="bi bi-eye"></i> Ver Detalles del Proyecto
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modales -->
+{% if 'responder' in acciones_disponibles %}
+<div class="modal fade" id="responderModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Responder a la Sesión</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'responder_sesion' sesion.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    {{ responder_form }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Enviar Respuesta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if 'proponer_horarios' in acciones_disponibles %}
+<div class="modal fade" id="propuestaModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">Proponer Horarios Alternativos</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'proponer_horarios' sesion.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p class="text-muted">Por favor, proponga al menos una opción de horario alternativa.</p>
+                    {{ propuesta_form }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Enviar Propuestas</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if 'subir_archivo' in acciones_disponibles %}
+<div class="modal fade" id="archivoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-secondary text-white">
+                <h5 class="modal-title">Subir Archivo a la Sesión</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'subir_archivo_sesion' sesion.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    {{ archivo_form }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Subir Archivo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if 'marcar_realizada' in acciones_disponibles %}
+<div class="modal fade" id="minutaModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Marcar Sesión como Realizada</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'marcar_sesion_realizada' sesion.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    {{ minuta_form }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Marcar como Realizada</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+    function toggleReprogramacion(radio) {
+        const reprogramacionFields = document.getElementById('reprogramacion-fields');
+        if (radio.value === 'reprogramar') {
+            reprogramacionFields.style.display = 'block';
+        } else {
+            reprogramacionFields.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

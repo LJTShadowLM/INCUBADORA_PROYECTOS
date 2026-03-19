@@ -1,0 +1,177 @@
+{% extends "emprendedores/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Inscripción al Forum de Ciencias Técnicas e Innovación</h3>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <h4 class="mb-3">Datos Personales</h4>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.nombre_completo.label_tag }}
+                                {{ form.nombre_completo }}
+                                {% if form.nombre_completo.errors %}
+                                    <div class="text-danger">{{ form.nombre_completo.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.carne_identidad.label_tag }}
+                                {{ form.carne_identidad }}
+                                {% if form.carne_identidad.errors %}
+                                    <div class="text-danger">{{ form.carne_identidad.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.categoria_ocupacional.label_tag }}
+                                {{ form.categoria_ocupacional }}
+                                {% if form.categoria_ocupacional.errors %}
+                                    <div class="text-danger">{{ form.categoria_ocupacional.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.centro_trabajo.label_tag }}
+                                {{ form.centro_trabajo }}
+                                {% if form.centro_trabajo.errors %}
+                                    <div class="text-danger">{{ form.centro_trabajo.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.contacto.label_tag }}
+                                {{ form.contacto }}
+                                {% if form.contacto.errors %}
+                                    <div class="text-danger">{{ form.contacto.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.relacion_empresa.label_tag }}
+                                {{ form.relacion_empresa }}
+                                {% if form.relacion_empresa.errors %}
+                                    <div class="text-danger">{{ form.relacion_empresa.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <h4 class="mb-3 mt-4">Documentación Requerida</h4>
+                        <div class="alert alert-info">
+                            <strong>Nota:</strong> Todos los documentos son obligatorios para completar la inscripción.
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.ponencia.label_tag }}
+                                {{ form.ponencia }}
+                                <small class="form-text text-muted">{{ form.ponencia.help_text }}</small>
+                                {% if form.ponencia.errors %}
+                                    <div class="text-danger">{{ form.ponencia.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.ficha_tecnica.label_tag }}
+                                {{ form.ficha_tecnica }}
+                                <small class="form-text text-muted">{{ form.ficha_tecnica.help_text }}</small>
+                                {% if form.ficha_tecnica.errors %}
+                                    <div class="text-danger">{{ form.ficha_tecnica.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.avales.label_tag }}
+                                {{ form.avales }}
+                                <small class="form-text text-muted">{{ form.avales.help_text }}</small>
+                                {% if form.avales.errors %}
+                                    <div class="text-danger">{{ form.avales.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.presentacion.label_tag }}
+                                {{ form.presentacion }}
+                                <small class="form-text text-muted">{{ form.presentacion.help_text }}</small>
+                                {% if form.presentacion.errors %}
+                                    <div class="text-danger">{{ form.presentacion.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="terminos" required>
+                            <label class="form-check-label" for="terminos">
+                                Acepto los <a href="#" data-bs-toggle="modal" data-bs-target="#terminosModal">términos y condiciones</a> del forum
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2">
+                            <i class="bi bi-send-fill"></i> Enviar Inscripción
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="{% url 'ver_estado_inscripcion' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-search"></i> Ver estado de mi inscripción
+                </a>
+                <a href="{% url 'forum_evento' %}" class="btn btn-secondary ms-2">
+                    <i class="bi bi-arrow-left"></i> Volver al Forum
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Términos -->
+<div class="modal fade" id="terminosModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Términos y Condiciones del Forum</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Requisitos de participación:</h6>
+                <ul>
+                    <li>Todos los documentos deben ser entregados en los formatos especificados</li>
+                    <li>Los trabajos deben ser originales e inéditos</li>
+                    <li>El incumplimiento de los plazos de entrega invalidará la participación</li>
+                    <li>El comité organizador se reserva el derecho de evaluación y selección</li>
+                </ul>
+                
+                <h6>Proceso de evaluación:</h6>
+                <ul>
+                    <li>Los trabajos serán evaluados por un comité especializado</li>
+                    <li>El plazo de evaluación es de 15 a 30 días hábiles</li>
+                    <li>Los resultados serán comunicados por correo electrónico</li>
+                    <li>Las decisiones del comité son inapelables</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
