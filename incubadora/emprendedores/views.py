@@ -238,7 +238,7 @@ def panel_tutor(request):
     
     sesiones_proximas = SesionMentoria.objects.filter(
         proyecto__in=proyectos,
-        estado='confirmada',
+        estado__in=['confirmada', 'propuesta'],
         fecha_propuesta__gte=hoy
     ).order_by('fecha_propuesta')[:5]
     
@@ -248,6 +248,12 @@ def panel_tutor(request):
         fecha_propuesta__range=(hoy, hoy + timedelta(days=2)),
         es_material_obligatorio=True
     ).exclude(archivos__isnull=False).distinct()
+
+    # Solicitudes de sesión enviadas por emprendedores (propuesta, no creada por el tutor)
+    solicitudes_sesion = SesionMentoria.objects.filter(
+        proyecto__in=proyectos,
+        estado='propuesta',
+    ).exclude(creada_por=request.user).order_by('fecha_propuesta')
     
     # Calcular métricas reales
     tareas_pendientes = Tarea.objects.filter(
@@ -307,6 +313,7 @@ def panel_tutor(request):
         'progreso_promedio': progreso_promedio,
         'promedio_evaluaciones': 0,
         'eventos_calendario': eventos_calendario,
+        'solicitudes_sesion': solicitudes_sesion,
     })
 
 # Vista de panel de emprendedor
@@ -1177,34 +1184,71 @@ def eliminar_configuracion_correo(request, configuracion_id):
 @login_required
 def crear_sesion_mentoria(request, proyecto_id):
     proyecto = get_object_or_404(Proyecto, id=proyecto_id)
-    
-    if not (request.user.groups.filter(name='Tutor').exists() and 
-            proyecto in request.user.tutor.proyectos_asignados.all()):
-        messages.error(request, "No tiene permisos para crear sesiones en este proyecto.")
+
+    # Verificar que el usuario es tutor y tiene este proyecto asignado
+    if not hasattr(request.user, 'tutor') or proyecto.tutor != request.user.tutor:
+        messages.error(request, "No tienes permisos para crear sesiones en este proyecto.")
         return redirect('panel_tutor')
-    
+
     if request.method == 'POST':
-        form = SesionMentoriaForm(request.POST, proyecto=proyecto, usuario=request.user)
-        if form.is_valid():
-            sesion = form.save()
-            
+        # Leer campos del modal directamente
+        titulo = request.POST.get('titulo', '').strip()
+        tipo = request.POST.get('tipo', '').strip()
+        fecha_propuesta = request.POST.get('fecha_propuesta', '').strip()
+        duracion = request.POST.get('duracion', '60').strip()
+        formato = request.POST.get('formato', 'presencial').strip()
+        enlace_virtual = request.POST.get('enlace_virtual', '').strip()
+        descripcion = request.POST.get('descripcion', '').strip()
+        materiales_requeridos = request.POST.get('materiales_requeridos', '').strip()
+
+        # Validaciones básicas
+        if not titulo or not tipo or not fecha_propuesta:
+            messages.error(request, "El título, tipo y fecha son obligatorios.")
+            return redirect('panel_tutor')
+
+        try:
+            sesion = SesionMentoria(
+                proyecto=proyecto,
+                creada_por=request.user,
+                titulo=titulo,
+                tipo=tipo,
+                fecha_propuesta=fecha_propuesta,
+                duracion=int(duracion),
+                formato=formato,
+                enlace_virtual=enlace_virtual if formato == 'virtual' else '',
+                descripcion=descripcion,
+                materiales_requeridos=materiales_requeridos,
+                estado='propuesta',
+            )
+            sesion.save()
+
+            # Registrar evento
             EventoSesion.objects.create(
                 sesion=sesion,
                 usuario=request.user,
                 accion='crear_sesion',
-                detalles=f"Sesión creada en estado {sesion.get_estado_display()}"
+                detalles=f"Sesión '{titulo}' creada. Tipo: {tipo}. Formato: {formato}."
             )
-            
-            if sesion.estado == 'propuesta':
-                enviar_notificacion_sesion(sesion, 'nueva_propuesta')
-                messages.success(request, "Sesión propuesta correctamente. Se ha notificado al emprendedor.")
-            else:
-                messages.success(request, "Sesión guardada como borrador.")
-            
-            return redirect('detalle_sesion', sesion_id=sesion.id)
-    else:
-        form = SesionMentoriaForm(proyecto=proyecto, usuario=request.user)
-    
+
+            # Notificar al emprendedor si tiene usuario
+            if proyecto.usuario:
+                Mensaje.objects.create(
+                    remitente=request.user,
+                    destinatario=proyecto.usuario,
+                    tipo_destinatario='emprendedor',
+                    asunto=f'Nueva sesión agendada: {titulo}',
+                    contenido=f'Tu tutor ha agendado una nueva sesión para el proyecto "{proyecto.nombre_proyecto}".\n\nTítulo: {titulo}\nFecha: {fecha_propuesta}\nDuración: {duracion} minutos\nModalidad: {formato}\n\nDescripción:\n{descripcion}',
+                )
+
+            messages.success(request, f'Sesión "{titulo}" agendada correctamente.')
+
+        except Exception as e:
+            messages.error(request, f'Error al crear la sesión: {str(e)}')
+
+        return redirect('panel_tutor')
+
+    # GET: mostrar formulario clásico (por si se accede por URL directa)
+    form = SesionMentoriaForm(proyecto=proyecto, usuario=request.user)
     return render(request, 'emprendedores/sesiones/crear_sesion.html', {
         'form': form,
         'proyecto': proyecto
@@ -1629,7 +1673,7 @@ def lista_proyectos(request):
 
 
 
-# Permite al tutor crear tareas de forma manual tambien 
+#  crear tareas de forma manual 
 @login_required
 def crear_tarea_tutor(request):
     if not hasattr(request.user, 'tutor'):
@@ -1700,4 +1744,77 @@ def bandeja_tutor(request):
         'no_leidos': no_leidos,
         'emprendedores': emprendedores,
         'administradores': administradores,
-    })    
+    })
+
+
+@login_required
+def solicitar_sesion_emprendedor(request, proyecto_id):
+    proyecto = get_object_or_404(Proyecto, id=proyecto_id)
+ 
+    # Solo el emprendedor dueño del proyecto puede solicitar sesiones
+    if request.user != proyecto.usuario:
+        messages.error(request, "No tienes permisos para solicitar sesiones en este proyecto.")
+        return redirect('panel_emprendedor')
+ 
+    # El proyecto debe tener tutor asignado
+    if not proyecto.tutor:
+        messages.error(request, "Tu proyecto no tiene tutor asignado aún.")
+        return redirect('panel_emprendedor')
+ 
+    if request.method == 'POST':
+        objetivo = request.POST.get('objetivo', '').strip()
+        tipo = request.POST.get('tipo', 'seguimiento').strip()
+        fecha_propuesta = request.POST.get('fecha_propuesta', '').strip()
+        duracion = request.POST.get('duracion', '60').strip()
+        formato = request.POST.get('formato', 'virtual').strip()
+        agenda = request.POST.get('agenda', '').strip()
+ 
+        if not objetivo or not fecha_propuesta:
+            messages.error(request, "El objetivo y la fecha son obligatorios.")
+            return redirect('panel_emprendedor')
+ 
+        try:
+            sesion = SesionMentoria.objects.create(
+                proyecto=proyecto,
+                creada_por=request.user,
+                objetivo=objetivo,
+                tipo=tipo,
+                fecha_propuesta=fecha_propuesta,
+                duracion=int(duracion),
+                formato=formato,
+                agenda=agenda,
+                estado='propuesta',
+            )
+ 
+            # Registrar evento
+            EventoSesion.objects.create(
+                sesion=sesion,
+                usuario=request.user,
+                accion='solicitar_sesion',
+                detalles=f"El emprendedor solicitó una sesión: {objetivo}. Fecha propuesta: {fecha_propuesta}."
+            )
+ 
+            # Notificar al tutor via mensaje interno
+            Mensaje.objects.create(
+                remitente=request.user,
+                destinatario=proyecto.tutor.usuario,
+                tipo_destinatario='tutor',
+                asunto=f'Solicitud de sesión: {proyecto.nombre_proyecto}',
+                contenido=(
+                    f'El emprendedor {request.user.get_full_name()} ha solicitado una sesión de mentoría '
+                    f'para el proyecto "{proyecto.nombre_proyecto}".\n\n'
+                    f'Objetivo: {objetivo}\n'
+                    f'Tipo: {tipo}\n'
+                    f'Fecha propuesta: {fecha_propuesta}\n'
+                    f'Duración: {duracion} minutos\n'
+                    f'Formato: {formato}\n\n'
+                    f'Puedes aceptar o rechazar la solicitud desde tu panel.'
+                ),
+            )
+ 
+            messages.success(request, 'Solicitud de sesión enviada correctamente. Tu tutor la revisará pronto.')
+ 
+        except Exception as e:
+            messages.error(request, f'Error al enviar la solicitud: {str(e)}')
+ 
+    return redirect('panel_emprendedor')

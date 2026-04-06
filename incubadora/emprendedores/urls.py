@@ -54,7 +54,8 @@ urlpatterns = [
     path('proyecto/<int:proyecto_id>/sesiones/', views.listar_sesiones_proyecto, name='listar_sesiones_proyecto'),
     path('panel/admin/tutor/<int:tutor_id>/ver/', views.ver_tutor, name='ver_tutor'),
     path('panel/admin/emprendedor/<int:emprendedor_id>/ver/', views.ver_emprendedor, name='ver_emprendedor'),
-
+    path('proyecto/<int:proyecto_id>/solicitar-sesion/', views.solicitar_sesion_emprendedor, name='solicitar_sesion_emprendedor'),
+    
     # URLs para mensajes
     path('mensajes/', views.ver_mensajes, name='ver_mensajes'),
     path('mensajes/<int:mensaje_id>/marcar-leido/', views.marcar_mensaje_leido, name='marcar_mensaje_leido'),
