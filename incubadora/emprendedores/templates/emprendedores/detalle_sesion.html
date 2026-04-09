@@ -85,6 +85,113 @@
                 </div>
             </div>
             {% endif %}
+
+            <!-- Acciones disponibles según el estado -->
+            {% if sesion.estado != 'realizada' and sesion.estado != 'cancelada' %}
+            <div class="mt-4 d-flex gap-2 flex-wrap">
+                {% if sesion.estado == 'confirmada' %}
+                <form method="post" action="{% url 'marcar_sesion_realizada' sesion.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle me-1"></i> Marcar como Realizada
+                    </button>
+                </form>
+                {% endif %}
+
+                <button type="button" class="btn btn-warning"
+                        data-bs-toggle="modal" data-bs-target="#reagendarModal">
+                    <i class="bi bi-calendar-event me-1"></i> Reagendar
+                </button>
+
+                <button type="button" class="btn btn-danger"
+                        data-bs-toggle="modal" data-bs-target="#cancelarModal">
+                    <i class="bi bi-x-circle me-1"></i> Cancelar Sesión
+                </button>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal Cancelar Sesión -->
+<div class="modal fade" id="cancelarModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-x-circle me-2"></i>Cancelar Sesión
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'responder_sesion' sesion.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="rechazar">
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Esta acción cancelará la sesión. Se notificará a la otra parte.
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Motivo de la cancelación *</label>
+                        <textarea name="mensaje" class="form-control" rows="4" required
+                                  placeholder="Explique el motivo por el que cancela esta sesión..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Volver</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-x-circle me-1"></i> Confirmar Cancelación
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Reagendar Sesión -->
+<div class="modal fade" id="reagendarModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">
+                    <i class="bi bi-calendar-event me-2"></i>Reagendar Sesión
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'proponer_horarios' sesion.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p class="text-muted">Propón hasta tres opciones de horario. La otra parte elegirá la que mejor le convenga.</p>
+                    <div class="mb-3">
+                        <label class="form-label">Primera opción *</label>
+                        <input type="datetime-local" name="fecha_propuesta_1" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Segunda opción (opcional)</label>
+                        <input type="datetime-local" name="fecha_propuesta_2" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tercera opción (opcional)</label>
+                        <input type="datetime-local" name="fecha_propuesta_3" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Duración (minutos)</label>
+                        <input type="number" name="duracion" class="form-control" value="60" min="15" step="15">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Motivo del cambio</label>
+                        <textarea name="mensaje" class="form-control" rows="3"
+                                  placeholder="Explique por qué necesita cambiar el horario..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-send me-1"></i> Enviar Propuesta
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

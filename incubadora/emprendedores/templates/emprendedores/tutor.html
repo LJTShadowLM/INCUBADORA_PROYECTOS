@@ -188,6 +188,11 @@
                                                             data-bs-toggle="modal" data-bs-target="#mensajeModal{{ proyecto.id }}">
                                                         <i class="bi bi-envelope"></i> Enviar Mensaje
                                                     </button>
+                                                    <!-- Botón Agendar Sesión -->
+                                                    <button type="button" class="btn btn-sm btn-outline-success btn-action"
+                                                            data-bs-toggle="modal" data-bs-target="#sesionModal{{ proyecto.id }}">
+                                                        <i class="bi bi-calendar-plus"></i> Sesión
+                                                    </button>
                                                     <button class="btn btn-sm btn-outline-info btn-action" data-bs-toggle="modal" data-bs-target="#eventoModal{{ proyecto.id }}">
                                                         <i class="bi bi-calendar-plus"></i> Evento
                                                     </button>
@@ -229,28 +234,24 @@
                     <div class="list-group">
                         {% for sesion in sesiones_proximas %}
                         <div class="list-group-item">
-                            <div class="d-flex w-100 justify-content-between align-items-start">
-                                <div>
-                                    <span class="badge 
-                                        {% if sesion.estado == 'confirmada' %}bg-success
-                                        {% elif sesion.estado == 'propuesta' %}bg-warning text-dark
-                                        {% else %}bg-secondary{% endif %} me-1">
-                                        {{ sesion.get_estado_display }}
-                                    </span>
-                                    <strong>{{ sesion.objetivo }}</strong>
-                                </div>
-                                <small class="text-muted ms-2 text-nowrap">{{ sesion.fecha_propuesta|date:"d/m H:i" }}</small>
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ sesion.get_tipo_display }}</h6>
+                                <small>{{ sesion.fecha_propuesta|date:"d/m H:i" }}</small>
                             </div>
-                            <p class="mb-1 mt-1 text-muted">
-                                <i class="bi bi-folder2 me-1"></i>{{ sesion.proyecto.nombre_proyecto }}
-                            </p>
-                            <small class="text-muted">
-                                {{ sesion.get_tipo_display }} · {{ sesion.duracion }} min · {{ sesion.get_formato_display }}
-                            </small>
-                            <div class="mt-2">
+                            <p class="mb-1">{{ sesion.proyecto.nombre_proyecto }}</p>
+                            <small class="text-muted">{{ sesion.duracion }} minutos | {{ sesion.get_formato_display }}</small>
+                            <div class="mt-2 d-flex gap-1 flex-wrap">
                                 <a href="{% url 'detalle_sesion' sesion.id %}" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-eye"></i> Ver detalles
                                 </a>
+                                <button type="button" class="btn btn-sm btn-outline-warning"
+                                        data-bs-toggle="modal" data-bs-target="#posponerModal{{ sesion.id }}">
+                                    <i class="bi bi-calendar-event"></i> Posponer
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                        data-bs-toggle="modal" data-bs-target="#cancelarSesionModal{{ sesion.id }}">
+                                    <i class="bi bi-x-circle"></i> Cancelar
+                                </button>
                             </div>
                         </div>
                         {% empty %}
@@ -369,6 +370,78 @@
         </div>
     </div>
 </div>
+
+<!-- Modal para agendar sesión (UNO POR PROYECTO) -->
+{% for proyecto in proyectos %}
+<div class="modal fade" id="sesionModal{{ proyecto.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-calendar-plus me-2"></i>Agendar Sesión — {{ proyecto.nombre_proyecto }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'crear_sesion' proyecto.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Objetivo de la sesión *</label>
+                        <input type="text" name="objetivo" class="form-control" required
+                               placeholder="Ej: Revisar avance del módulo principal">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tipo *</label>
+                            <select name="tipo" class="form-select" required>
+                                <option value="seguimiento">Seguimiento</option>
+                                <option value="revision_inicial">Revisión Inicial</option>
+                                <option value="presentacion_avance">Presentación de Avance</option>
+                                <option value="problematica">Resolución de Problemática</option>
+                                <option value="otro">Otro</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Formato</label>
+                            <select name="formato" class="form-select">
+                                <option value="virtual">Virtual</option>
+                                <option value="presencial">Presencial</option>
+                                <option value="hibrido">Híbrido</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Fecha y hora *</label>
+                            <input type="datetime-local" name="fecha_propuesta" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Duración (minutos)</label>
+                            <input type="number" name="duracion" class="form-control" value="60" min="15" max="240">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Agenda / Temas a tratar</label>
+                        <textarea name="agenda" class="form-control" rows="3"
+                                  placeholder="Describe los temas que se tratarán..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Materiales requeridos</label>
+                        <textarea name="materiales_requeridos" class="form-control" rows="2"
+                                  placeholder="Lista de materiales que debe traer el emprendedor..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" name="enviar_propuesta" value="true" class="btn btn-success">
+                        <i class="bi bi-send me-1"></i> Agendar Sesión
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
 
 <!-- Modal para enviar mensajes (UNO POR PROYECTO) -->
 {% for proyecto in proyectos %}
@@ -690,4 +763,91 @@
         });
     }
 </script>
+
+<!-- Modales Posponer y Cancelar Sesión (UNO POR SESIÓN) -->
+{% for sesion in sesiones_proximas %}
+
+<!-- Modal Posponer -->
+<div class="modal fade" id="posponerModal{{ sesion.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">
+                    <i class="bi bi-calendar-event me-2"></i>Posponer Sesión
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'proponer_horarios' sesion.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p class="text-muted">
+                        <i class="bi bi-folder2 me-1"></i>{{ sesion.proyecto.nombre_proyecto }} —
+                        {{ sesion.fecha_propuesta|date:"d/m/Y H:i" }}
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label">Nueva fecha y hora *</label>
+                        <input type="datetime-local" name="fecha_propuesta_1" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Duración (minutos)</label>
+                        <input type="number" name="duracion" class="form-control"
+                               value="{{ sesion.duracion }}" min="15" step="15">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Motivo del cambio *</label>
+                        <textarea name="mensaje" class="form-control" rows="3" required
+                                  placeholder="Explique el motivo por el que pospone esta sesión..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-send me-1"></i> Enviar Propuesta
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Cancelar -->
+<div class="modal fade" id="cancelarSesionModal{{ sesion.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-x-circle me-2"></i>Cancelar Sesión
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'responder_sesion' sesion.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="rechazar">
+                <div class="modal-body">
+                    <p class="text-muted">
+                        <i class="bi bi-folder2 me-1"></i>{{ sesion.proyecto.nombre_proyecto }} —
+                        {{ sesion.fecha_propuesta|date:"d/m/Y H:i" }}
+                    </p>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Se notificará al emprendedor automáticamente.
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Motivo de la cancelación *</label>
+                        <textarea name="mensaje" class="form-control" rows="3" required
+                                  placeholder="Explique el motivo de la cancelación..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Volver</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-x-circle me-1"></i> Confirmar Cancelación
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endfor %}
 {% endblock %}

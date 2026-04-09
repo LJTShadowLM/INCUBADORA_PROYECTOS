@@ -1192,42 +1192,39 @@ def crear_sesion_mentoria(request, proyecto_id):
 
     if request.method == 'POST':
         # Leer campos del modal directamente
-        titulo = request.POST.get('titulo', '').strip()
+        objetivo = request.POST.get('objetivo', '').strip()
         tipo = request.POST.get('tipo', '').strip()
         fecha_propuesta = request.POST.get('fecha_propuesta', '').strip()
         duracion = request.POST.get('duracion', '60').strip()
-        formato = request.POST.get('formato', 'presencial').strip()
-        enlace_virtual = request.POST.get('enlace_virtual', '').strip()
-        descripcion = request.POST.get('descripcion', '').strip()
+        formato = request.POST.get('formato', 'virtual').strip()
+        agenda = request.POST.get('agenda', '').strip()
         materiales_requeridos = request.POST.get('materiales_requeridos', '').strip()
 
         # Validaciones básicas
-        if not titulo or not tipo or not fecha_propuesta:
-            messages.error(request, "El título, tipo y fecha son obligatorios.")
+        if not objetivo or not tipo or not fecha_propuesta:
+            messages.error(request, "El objetivo, tipo y fecha son obligatorios.")
             return redirect('panel_tutor')
 
         try:
-            sesion = SesionMentoria(
+            sesion = SesionMentoria.objects.create(
                 proyecto=proyecto,
                 creada_por=request.user,
-                titulo=titulo,
+                objetivo=objetivo,
                 tipo=tipo,
                 fecha_propuesta=fecha_propuesta,
                 duracion=int(duracion),
                 formato=formato,
-                enlace_virtual=enlace_virtual if formato == 'virtual' else '',
-                descripcion=descripcion,
+                agenda=agenda,
                 materiales_requeridos=materiales_requeridos,
                 estado='propuesta',
             )
-            sesion.save()
 
             # Registrar evento
             EventoSesion.objects.create(
                 sesion=sesion,
                 usuario=request.user,
                 accion='crear_sesion',
-                detalles=f"Sesión '{titulo}' creada. Tipo: {tipo}. Formato: {formato}."
+                detalles=f"Sesión '{objetivo}' creada. Tipo: {tipo}. Formato: {formato}."
             )
 
             # Notificar al emprendedor si tiene usuario
@@ -1236,11 +1233,14 @@ def crear_sesion_mentoria(request, proyecto_id):
                     remitente=request.user,
                     destinatario=proyecto.usuario,
                     tipo_destinatario='emprendedor',
-                    asunto=f'Nueva sesión agendada: {titulo}',
-                    contenido=f'Tu tutor ha agendado una nueva sesión para el proyecto "{proyecto.nombre_proyecto}".\n\nTítulo: {titulo}\nFecha: {fecha_propuesta}\nDuración: {duracion} minutos\nModalidad: {formato}\n\nDescripción:\n{descripcion}',
+                    asunto=f'Nueva sesión agendada: {objetivo}',
+                    contenido=(
+                        f'Tu tutor ha agendado una sesión de mentoría para el proyecto "{proyecto.nombre_proyecto}".\n\n'
+                        f'Objetivo: {objetivo}\nFecha: {fecha_propuesta}\nDuración: {duracion} minutos\nModalidad: {formato}'
+                    ),
                 )
 
-            messages.success(request, f'Sesión "{titulo}" agendada correctamente.')
+            messages.success(request, f'Sesión "{objetivo}" agendada correctamente.')
 
         except Exception as e:
             messages.error(request, f'Error al crear la sesión: {str(e)}')
@@ -1393,75 +1393,110 @@ def eliminar_problema(request, problema_id):
 @login_required
 def responder_sesion(request, sesion_id):
     sesion = get_object_or_404(SesionMentoria, id=sesion_id)
-    
+
     if request.method == 'POST':
-        form = ResponderSesionForm(request.POST)
-        if form.is_valid():
-            accion = form.cleaned_data['accion']
-            mensaje = form.cleaned_data['mensaje']
-            
-            if accion == 'aceptar':
-                sesion.estado = 'confirmada'
-                sesion.save()
-                messages.success(request, "Sesión aceptada correctamente.")
-            elif accion == 'rechazar':
-                sesion.estado = 'cancelada'
-                sesion.motivo_rechazo = mensaje
-                sesion.save()
-                messages.success(request, "Sesión rechazada correctamente.")
-            elif accion == 'reprogramar':
-                # Lógica para reprogramación
-                messages.info(request, "Función de reprogramación en desarrollo.")
-            
-            return redirect('detalle_sesion', sesion_id=sesion.id)
-    else:
-        form = ResponderSesionForm()
-    
-    return render(request, 'emprendedores/sesiones/responder_sesion.html', {
-        'form': form,
-        'sesion': sesion
-    })
+        accion = request.POST.get('accion', '').strip()
+        mensaje = request.POST.get('mensaje', '').strip()
+
+        if accion == 'aceptar':
+            sesion.estado = 'confirmada'
+            sesion.save()
+            messages.success(request, "Sesión confirmada correctamente.")
+
+            # Notificar al creador de la sesión
+            if request.user != sesion.creada_por:
+                Mensaje.objects.create(
+                    remitente=request.user,
+                    destinatario=sesion.creada_por,
+                    tipo_destinatario='tutor' if hasattr(sesion.creada_por, 'tutor') else 'emprendedor',
+                    asunto=f'Sesión confirmada: {sesion.proyecto.nombre_proyecto}',
+                    contenido=f'La sesión del proyecto "{sesion.proyecto.nombre_proyecto}" ha sido confirmada para el {sesion.fecha_propuesta.strftime("%d/%m/%Y %H:%M")}.',
+                )
+
+        elif accion == 'rechazar':
+            if not mensaje:
+                messages.error(request, "Debes indicar el motivo de la cancelación.")
+                return redirect('detalle_sesion', sesion_id=sesion.id)
+            sesion.estado = 'cancelada'
+            sesion.motivo_rechazo = mensaje
+            sesion.save()
+            messages.success(request, "Sesión cancelada correctamente.")
+
+            # Notificar al emprendedor
+            if sesion.proyecto.usuario:
+                Mensaje.objects.create(
+                    remitente=request.user,
+                    destinatario=sesion.proyecto.usuario,
+                    tipo_destinatario='emprendedor',
+                    asunto=f'Sesión cancelada: {sesion.proyecto.nombre_proyecto}',
+                    contenido=f'La sesión del proyecto "{sesion.proyecto.nombre_proyecto}" ha sido cancelada.\n\nMotivo: {mensaje}',
+                )
+
+        return redirect('panel_tutor')
+
+    return redirect('panel_tutor')
 
 @login_required
 def proponer_horarios(request, sesion_id):
     sesion = get_object_or_404(SesionMentoria, id=sesion_id)
-    
-    # Verificar permisos - solo el creador de la sesión o el tutor/emprendedor relacionado pueden proponer horarios
-    if not (request.user == sesion.creada_por or 
+
+    if not (request.user == sesion.creada_por or
             request.user == sesion.proyecto.usuario or
             (hasattr(request.user, 'tutor') and sesion.proyecto.tutor == request.user.tutor)):
         messages.error(request, "No tienes permisos para proponer horarios para esta sesión.")
         return redirect('panel_usuario')
-    
+
     if request.method == 'POST':
-        form = PropuestaHorarioForm(request.POST)
-        if form.is_valid():
-            propuesta = form.save(commit=False)
-            propuesta.sesion = sesion
-            propuesta.propuesto_por = request.user
-            propuesta.save()
-            
-            # Cambiar el estado de la sesión a reprogramación solicitada
+        fecha1 = request.POST.get('fecha_propuesta_1', '').strip()
+        duracion = request.POST.get('duracion', '60').strip()
+        mensaje = request.POST.get('mensaje', '').strip()
+
+        if not fecha1:
+            messages.error(request, "Debes indicar al menos una fecha.")
+            return redirect('panel_tutor')
+
+        try:
+            PropuestaHorario.objects.create(
+                sesion=sesion,
+                fecha_propuesta=fecha1,
+                duracion=int(duracion),
+                propuesto_por=request.user,
+                mensaje=mensaje,
+            )
+
             sesion.estado = 'reprogramacion_solicitada'
             sesion.save()
-            
-            # Registrar evento
+
             EventoSesion.objects.create(
                 sesion=sesion,
                 usuario=request.user,
                 accion='proponer_horarios',
-                detalles=f"Se han propuesto nuevos horarios para la sesión: {propuesta.mensaje}"
+                detalles=f"Nuevo horario propuesto: {fecha1}. Motivo: {mensaje}"
             )
-            
-            messages.success(request, "Horarios propuestos correctamente. Esperando confirmación.")
-            return redirect('detalle_sesion', sesion_id=sesion.id)
-    else:
-        form = PropuestaHorarioForm()
-    
-    return render(request, 'emprendedores/sesiones/proponer_horarios.html', {
-        'form': form,
-        'sesion': sesion
-    })        
+
+            # Notificar a la otra parte
+            if request.user == sesion.proyecto.usuario:
+                destinatario = sesion.proyecto.tutor.usuario if sesion.proyecto.tutor else None
+            else:
+                destinatario = sesion.proyecto.usuario
+
+            if destinatario:
+                Mensaje.objects.create(
+                    remitente=request.user,
+                    destinatario=destinatario,
+                    tipo_destinatario='tutor' if hasattr(destinatario, 'tutor') else 'emprendedor',
+                    asunto=f'Solicitud de reagendamiento: {sesion.proyecto.nombre_proyecto}',
+                    contenido=(
+                        f'Se ha solicitado reagendar la sesión del proyecto "{sesion.proyecto.nombre_proyecto}".\n\n'
+                        f'Nueva fecha propuesta: {fecha1}\nMotivo: {mensaje}'
+                    ),
+                )
+
+            messages.success(request, "Propuesta de reagendamiento enviada correctamente.")
+        except Exception as e:
+            messages.error(request, f'Error al proponer horario: {str(e)}')
+
+    return redirect('panel_tutor')
 
 @login_required
 def aceptar_propuesta_horario(request, propuesta_id):
