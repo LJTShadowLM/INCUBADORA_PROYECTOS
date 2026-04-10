@@ -46,7 +46,7 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-4 mb-3">
                             <div class="card border-start border-success border-4">
                                 <div class="card-body">
                                     <h6 class="card-title text-muted">Proyectos</h6>
@@ -54,7 +54,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-4 mb-3">
                             <div class="card border-start border-info border-4">
                                 <div class="card-body">
                                     <h6 class="card-title text-muted">Sesiones Pendientes</h6>
@@ -62,7 +62,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-4 mb-3">
                             <div class="card border-start border-warning border-4">
                                 <div class="card-body">
                                     <h6 class="card-title text-muted">Tareas Completadas</h6>
@@ -70,48 +70,18 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <div class="card border-start border-danger border-4">
-                                <div class="card-body">
-                                    <h6 class="card-title text-muted">Horas Invertidas</h6>
-                                    <h3 class="card-text">{{ horas_totales }}h</h3>
-                                </div>
-                            </div>
-                        </div>
                     </div>
-                    
+
                     <div class="row mt-3">
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <div class="card mb-3">
                                 <div class="card-body">
                                     <h6 class="card-title text-primary">Progreso Promedio</h6>
                                     <div class="progress mb-2" style="height: 20px;">
-                                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ progreso_promedio }}%;" 
-                                             aria-valuenow="{{ progreso_promedio }}" aria-valuemin="0" aria-valuemax="100">{{ progreso_promedio }}%</div>
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ progreso_promedio }}%;"
+                                             aria-valuenow="{{ progreso_promedio }}" aria-valuemin="0" aria-valuemax="100">{{ progreso_promedio|floatformat:0 }}%</div>
                                     </div>
                                     <small class="text-muted">Promedio de todos los proyectos actuales</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h6 class="card-title text-primary">Evaluaciones Recientes</h6>
-                                    <div class="d-flex align-items-center">
-                                        <div class="me-3">
-                                            <span class="display-4 text-warning">{{ promedio_evaluaciones|floatformat:1 }}</span>
-                                        </div>
-                                        <div>
-                                            {% for i in "12345"|make_list %}
-                                                {% if forloop.counter <= promedio_evaluaciones %}
-                                                    <i class="bi bi-star-fill text-warning"></i>
-                                                {% else %}
-                                                    <i class="bi bi-star text-warning"></i>
-                                                {% endif %}
-                                            {% endfor %}
-                                            <div class="mt-1"><small>Promedio: {{ promedio_evaluaciones|floatformat:1 }}/5.0</small></div>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -234,20 +204,34 @@
                     <div class="list-group">
                         {% for sesion in sesiones_proximas %}
                         <div class="list-group-item">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-1">{{ sesion.get_tipo_display }}</h6>
-                                <small>{{ sesion.fecha_propuesta|date:"d/m H:i" }}</small>
+                            <div class="d-flex w-100 justify-content-between align-items-start">
+                                <div>
+                                    <span class="badge {% if sesion.estado == 'confirmada' %}bg-success{% elif sesion.estado == 'reprogramacion_solicitada' %}bg-warning text-dark{% else %}bg-secondary{% endif %} me-1">
+                                        {% if sesion.estado == 'reprogramacion_solicitada' %}Reagendada{% else %}{{ sesion.get_estado_display }}{% endif %}
+                                    </span>
+                                    <strong>{{ sesion.objetivo }}</strong>
+                                </div>
+                                <small class="text-muted text-nowrap ms-2">{{ sesion.fecha_propuesta|date:"d/m H:i" }}</small>
                             </div>
-                            <p class="mb-1">{{ sesion.proyecto.nombre_proyecto }}</p>
-                            <small class="text-muted">{{ sesion.duracion }} minutos | {{ sesion.get_formato_display }}</small>
+                            <p class="mb-1 mt-1 text-muted">
+                                <i class="bi bi-folder2 me-1"></i>{{ sesion.proyecto.nombre_proyecto }}
+                            </p>
+                            <small class="text-muted">{{ sesion.get_tipo_display }} · {{ sesion.duracion }} min · {{ sesion.get_formato_display }}</small>
                             <div class="mt-2 d-flex gap-1 flex-wrap">
                                 <a href="{% url 'detalle_sesion' sesion.id %}" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-eye"></i> Ver detalles
                                 </a>
+                                {% if sesion.estado != 'reprogramacion_solicitada' %}
                                 <button type="button" class="btn btn-sm btn-outline-warning"
                                         data-bs-toggle="modal" data-bs-target="#posponerModal{{ sesion.id }}">
                                     <i class="bi bi-calendar-event"></i> Posponer
                                 </button>
+                                {% else %}
+                                <button type="button" class="btn btn-sm btn-outline-warning" disabled
+                                        title="Esta sesión ya fue reagendada una vez">
+                                    <i class="bi bi-calendar-event"></i> Posponer
+                                </button>
+                                {% endif %}
                                 <button type="button" class="btn btn-sm btn-outline-danger"
                                         data-bs-toggle="modal" data-bs-target="#cancelarSesionModal{{ sesion.id }}">
                                     <i class="bi bi-x-circle"></i> Cancelar
@@ -764,34 +748,30 @@
     }
 </script>
 
-<!-- Modales Posponer y Cancelar Sesión (UNO POR SESIÓN) -->
+<!-- Modales Posponer y Cancelar Sesión -->
 {% for sesion in sesiones_proximas %}
-
-<!-- Modal Posponer -->
 <div class="modal fade" id="posponerModal{{ sesion.id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-warning text-dark">
-                <h5 class="modal-title">
-                    <i class="bi bi-calendar-event me-2"></i>Posponer Sesión
-                </h5>
+                <h5 class="modal-title"><i class="bi bi-calendar-event me-2"></i>Posponer Sesión</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="post" action="{% url 'proponer_horarios' sesion.id %}">
                 {% csrf_token %}
                 <div class="modal-body">
-                    <p class="text-muted">
-                        <i class="bi bi-folder2 me-1"></i>{{ sesion.proyecto.nombre_proyecto }} —
-                        {{ sesion.fecha_propuesta|date:"d/m/Y H:i" }}
+                    <p class="text-muted mb-1">
+                        <i class="bi bi-folder2 me-1"></i>{{ sesion.proyecto.nombre_proyecto }}
                     </p>
+                    <p class="text-muted">Fecha actual: <strong>{{ sesion.fecha_propuesta|date:"d/m/Y H:i" }}</strong></p>
                     <div class="mb-3">
-                        <label class="form-label">Nueva fecha y hora *</label>
-                        <input type="datetime-local" name="fecha_propuesta_1" class="form-control" required>
+                        <label class="form-label">Nueva fecha y hora * <small class="text-muted">(debe ser posterior a la fecha actual)</small></label>
+                        <input type="datetime-local" name="fecha_propuesta_1" class="form-control" required
+                               min="{{ sesion.fecha_propuesta|date:'Y-m-d' }}T{{ sesion.fecha_propuesta|date:'H:i' }}">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Duración (minutos)</label>
-                        <input type="number" name="duracion" class="form-control"
-                               value="{{ sesion.duracion }}" min="15" step="15">
+                        <input type="number" name="duracion" class="form-control" value="{{ sesion.duracion }}" min="15" step="15">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Motivo del cambio *</label>
@@ -810,14 +790,11 @@
     </div>
 </div>
 
-<!-- Modal Cancelar -->
 <div class="modal fade" id="cancelarSesionModal{{ sesion.id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title">
-                    <i class="bi bi-x-circle me-2"></i>Cancelar Sesión
-                </h5>
+                <h5 class="modal-title"><i class="bi bi-x-circle me-2"></i>Cancelar Sesión</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form method="post" action="{% url 'responder_sesion' sesion.id %}">
@@ -848,6 +825,6 @@
         </div>
     </div>
 </div>
-
 {% endfor %}
+
 {% endblock %}

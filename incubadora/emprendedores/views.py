@@ -238,8 +238,8 @@ def panel_tutor(request):
     
     sesiones_proximas = SesionMentoria.objects.filter(
         proyecto__in=proyectos,
-        estado__in=['confirmada', 'propuesta'],
-        fecha_propuesta__gte=hoy
+        estado__in=['confirmada', 'propuesta', 'reprogramacion_solicitada'],
+        fecha_propuesta__gte=hoy - timedelta(days=3)
     ).order_by('fecha_propuesta')[:5]
     
     sesiones_requieren_atencion = SesionMentoria.objects.filter(
@@ -272,16 +272,13 @@ def panel_tutor(request):
         completada=True
     ).count()
 
-    tareas_total = Tarea.objects.filter(
-        proyecto__in=proyectos
+    # tareas_total: completadas + pendientes vigentes (misma base para que el conteo sea consistente)
+    tareas_pendientes_count = Tarea.objects.filter(
+        proyecto__in=proyectos,
+        completada=False,
+        fecha_limite__gte=timezone.now()
     ).count()
-    
-    # Calcular horas totales de sesiones realizadas
-    from django.db.models import Sum
-    horas_totales = SesionMentoria.objects.filter(
-        proyecto__in=proyectos, estado='realizada'
-    ).aggregate(total=Sum('duracion'))['total'] or 0
-    horas_totales = horas_totales // 60  # Convertir minutos a horas
+    tareas_total = tareas_completadas + tareas_pendientes_count
     
     # Calcular progreso promedio
     if proyectos.exists():
@@ -309,7 +306,6 @@ def panel_tutor(request):
         'tareas_completadas': tareas_completadas,
         'tareas_completadas_lista': tareas_completadas_lista,
         'tareas_total': tareas_total,
-        'horas_totales': horas_totales,
         'progreso_promedio': progreso_promedio,
         'promedio_evaluaciones': 0,
         'eventos_calendario': eventos_calendario,
@@ -333,7 +329,7 @@ def asignar_tutor(request, proyecto_id):
             
             # Verificar si el tutor tiene disponibilidad
             if tutor.proyectos_actuales >= tutor.max_proyectos:
-                messages.error(request, f"El tutor {tutor.usuario.get_full_name()} ya tiene el máximo de proyectos asignados ({tutor.max_proyectos}).")
+                messages.error(request, f"El Gestor de Ciencias {tutor.usuario.get_full_name()} ya tiene el máximo de proyectos asignados ({tutor.max_proyectos}).")
                 return redirect('asignar_tutor', proyecto_id=proyecto_id)
             
             # Asignar el tutor al proyecto
@@ -341,7 +337,7 @@ def asignar_tutor(request, proyecto_id):
             proyecto.estado = 'asignado'
             proyecto.save()
             
-            messages.success(request, f"Tutor {tutor.usuario.get_full_name()} asignado exitosamente al proyecto {proyecto.nombre_proyecto}.")
+            messages.success(request, f"Gestor de Ciencias {tutor.usuario.get_full_name()} asignado exitosamente al proyecto {proyecto.nombre_proyecto}.")
             return redirect('panel_admin')
     
     # Obtener tutores disponibles
@@ -359,10 +355,10 @@ def registrar_tutor(request):
         if form.is_valid():
             try:
                 tutor = form.save()
-                messages.success(request, f"Tutor {tutor.usuario.get_full_name()} registrado exitosamente.")
+                messages.success(request, f"Gestor de Ciencias {tutor.usuario.get_full_name()} registrado exitosamente.")
                 return redirect('panel_admin')
             except Exception as e:
-                messages.error(request, f"Error al registrar tutor: {str(e)}")
+                messages.error(request, f"Error al registrar Gestor de Ciencias: {str(e)}")
         else:
             messages.error(request, "Por favor, corrija los errores en el formulario.")
     else:
@@ -393,10 +389,10 @@ def editar_tutor(request, tutor_id):
         if form.isvalid():
             try:
                 tutor_actualizado = form.save()
-                messages.success(request, f"Tutor {tutor_actualizado.usuario.get_full_name()} actualizado exitosamente.")
+                messages.success(request, f"Gestor de Ciencias {tutor_actualizado.usuario.get_full_name()} actualizado exitosamente.")
                 return redirect('panel_admin')
             except Exception as e:
-                messages.error(request, f"Error al actualizar tutor: {str(e)}")
+                messages.error(request, f"Error al actualizar Gestor de Ciencias: {str(e)}")
         else:
             for field, errors in form.errors.items():
                 for error in errors:
@@ -446,13 +442,13 @@ def asignar_tutor_emprendedor(request, emprendedor_id):
             tutor = get_object_or_404(Tutor, id=tutor_id)
             
             if tutor.proyectos_actuales >= tutor.max_proyectos:
-                messages.error(request, f"El tutor {tutor.usuario.get_full_name()} ya tiene el máximo de proyectos asignados ({tutor.max_proyectos}).")
+                messages.error(request, f"El Gestor de Ciencias {tutor.usuario.get_full_name()} ya tiene el máximo de proyectos asignados ({tutor.max_proyectos}).")
                 return redirect('asignar_tutor_emprendedor', emprendedor_id=emprendedor_id)
             
             profile.tutor = tutor
             profile.save()
             
-            messages.success(request, f"El tutor {tutor.usuario.get_full_name()} fue asignado al emprendedor {emprendedor.get_full_name()}.")
+            messages.success(request, f"El Gestor de Ciencias {tutor.usuario.get_full_name()} fue asignado al emprendedor {emprendedor.get_full_name()}.")
             return redirect('panel_admin')
     
     todos_tutores = Tutor.objects.all()
@@ -532,17 +528,36 @@ def cambiar_estado_proyecto_tutor(request, proyecto_id):
     if request.method == 'POST':
         nuevo_estado = request.POST.get('nuevo_estado')
         estados_permitidos = ['pendiente', 'revision', 'asignado', 'finalizado']
-        
+
+        # Validación: proyecto finalizado hace más de una semana no puede cambiar estado
+        if proyecto.estado == 'finalizado':
+            from django.utils import timezone as tz
+            if proyecto.fecha_registro:
+                # Usamos fecha_ultima_modificacion si existe, si no fecha_registro
+                fecha_finalizacion = getattr(proyecto, 'fecha_ultima_modificacion', proyecto.fecha_registro)
+                if (tz.now() - fecha_finalizacion).days >= 7:
+                    messages.error(request, f'El proyecto "{proyecto.nombre_proyecto}" fue finalizado hace más de una semana y no puede cambiar de estado.')
+                    return redirect('panel_tutor')
+
         if nuevo_estado in estados_permitidos:
             estado_anterior = proyecto.estado
             proyecto.estado = nuevo_estado
+
+            # Calcular progreso automáticamente según el estado
+            progreso_por_estado = {
+                'pendiente': 0,
+                'revision': 25,
+                'asignado': 60,
+                'finalizado': 100,
+            }
+            proyecto.progreso = progreso_por_estado.get(nuevo_estado, proyecto.progreso)
             proyecto.save()
             
             # Mensajes por estado para el emprendedor
             mensajes_estado = {
                 'pendiente': f'Tu proyecto "{proyecto.nombre_proyecto}" ha sido marcado como Pendiente.',
-                'revision': f'Tu proyecto "{proyecto.nombre_proyecto}" ha pasado a revisión. Tu tutor está evaluando el avance.',
-                'asignado': f'Tu proyecto "{proyecto.nombre_proyecto}" está En Proceso. Tu tutor ha comenzado el seguimiento activo.',
+                'revision': f'Tu proyecto "{proyecto.nombre_proyecto}" ha pasado a revisión. Tu Gestor de Ciencias está evaluando el avance.',
+                'asignado': f'Tu proyecto "{proyecto.nombre_proyecto}" está En Proceso. Tu Gestor de Ciencias ha comenzado el seguimiento activo.',
                 'finalizado': f'¡Felicidades! Tu proyecto "{proyecto.nombre_proyecto}" ha sido marcado como Finalizado.',
             }
             
@@ -1235,7 +1250,7 @@ def crear_sesion_mentoria(request, proyecto_id):
                     tipo_destinatario='emprendedor',
                     asunto=f'Nueva sesión agendada: {objetivo}',
                     contenido=(
-                        f'Tu tutor ha agendado una sesión de mentoría para el proyecto "{proyecto.nombre_proyecto}".\n\n'
+                        f'Tu Gestor de Ciencias ha agendado una sesión de mentoría para el proyecto "{proyecto.nombre_proyecto}".\n\n'
                         f'Objetivo: {objetivo}\nFecha: {fecha_propuesta}\nDuración: {duracion} minutos\nModalidad: {formato}'
                     ),
                 )
@@ -1446,19 +1461,34 @@ def proponer_horarios(request, sesion_id):
         messages.error(request, "No tienes permisos para proponer horarios para esta sesión.")
         return redirect('panel_usuario')
 
+    # Bloquear doble reagendamiento
+    if sesion.estado == 'reprogramacion_solicitada':
+        messages.error(request, "Esta sesión ya fue reagendada una vez y no puede volver a reagendarse.")
+        return redirect('panel_tutor')
+
     if request.method == 'POST':
-        fecha1 = request.POST.get('fecha_propuesta_1', '').strip()
+        fecha1_str = request.POST.get('fecha_propuesta_1', '').strip()
         duracion = request.POST.get('duracion', '60').strip()
         mensaje = request.POST.get('mensaje', '').strip()
 
-        if not fecha1:
-            messages.error(request, "Debes indicar al menos una fecha.")
+        if not fecha1_str:
+            messages.error(request, "Debes indicar la nueva fecha.")
+            return redirect('panel_tutor')
+
+        from django.utils.dateparse import parse_datetime
+        from django.utils import timezone as tz
+        fecha_nueva = parse_datetime(fecha1_str)
+        if fecha_nueva and tz.is_naive(fecha_nueva):
+            fecha_nueva = tz.make_aware(fecha_nueva)
+
+        if fecha_nueva and fecha_nueva <= sesion.fecha_propuesta:
+            messages.error(request, "La nueva fecha debe ser posterior a la fecha original de la sesión.")
             return redirect('panel_tutor')
 
         try:
             PropuestaHorario.objects.create(
                 sesion=sesion,
-                fecha_propuesta=fecha1,
+                fecha_propuesta=fecha_nueva,
                 duracion=int(duracion),
                 propuesto_por=request.user,
                 mensaje=mensaje,
@@ -1471,10 +1501,9 @@ def proponer_horarios(request, sesion_id):
                 sesion=sesion,
                 usuario=request.user,
                 accion='proponer_horarios',
-                detalles=f"Nuevo horario propuesto: {fecha1}. Motivo: {mensaje}"
+                detalles=f"Nuevo horario propuesto: {fecha1_str}. Motivo: {mensaje}"
             )
 
-            # Notificar a la otra parte
             if request.user == sesion.proyecto.usuario:
                 destinatario = sesion.proyecto.tutor.usuario if sesion.proyecto.tutor else None
             else:
@@ -1488,11 +1517,12 @@ def proponer_horarios(request, sesion_id):
                     asunto=f'Solicitud de reagendamiento: {sesion.proyecto.nombre_proyecto}',
                     contenido=(
                         f'Se ha solicitado reagendar la sesión del proyecto "{sesion.proyecto.nombre_proyecto}".\n\n'
-                        f'Nueva fecha propuesta: {fecha1}\nMotivo: {mensaje}'
+                        f'Nueva fecha propuesta: {fecha1_str}\nMotivo: {mensaje}'
                     ),
                 )
 
             messages.success(request, "Propuesta de reagendamiento enviada correctamente.")
+
         except Exception as e:
             messages.error(request, f'Error al proponer horario: {str(e)}')
 

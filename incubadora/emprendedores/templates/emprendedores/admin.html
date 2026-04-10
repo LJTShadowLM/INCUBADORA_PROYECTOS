@@ -16,27 +16,179 @@
                         <i class="bi bi-envelope"></i> Configurar Correo
                     </a>
                     <a href="{% url 'registrar_tutor' %}" class="btn btn-light me-2">
-                        <i class="bi bi-person-plus"></i> Registrar Tutor
+                        <i class="bi bi-person-plus"></i> Registrar Gestor de Ciencias
                     </a>
                 </div>
             </div>
         </div>        
         <div class="card-body">
-            <div class="row mt-3">
-                <div class="col-md-4 mb-3">
-                    <a href="{% url 'lista_tutores' %}" class="btn btn-primary w-100 py-3">
-                        <i class="bi bi-people-fill me-2"></i> Ver Tutores
-                    </a>
+            <!-- Barra de búsqueda general -->
+            <form method="get" action="{% url 'panel_admin' %}" class="mb-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        <input type="text" name="search" class="form-control" placeholder="Buscar por nombre o usuario..." value="{{ search_query }}">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary">Buscar</button>
+                    </div>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <a href="{% url 'lista_emprendedores' %}" class="btn btn-success w-100 py-3">
-                        <i class="bi bi-person-badge me-2"></i> Ver Emprendedores
-                    </a>
+            </form>
+
+            <div class="row">
+                <!-- Sección de Gestores de Ciencias -->
+                <div class="col-md-6">
+                    <h4>Gestores de Ciencias</h4>
+                    <form method="get" action="{% url 'panel_admin' %}">
+                        <input type="hidden" name="search" value="{{ search_query }}">
+                        <div class="mb-3">
+                            <label>Filtrar por especialidad:</label>
+                            <input type="text" name="tutor_especialidad" class="form-control" placeholder="Especialidad..." value="{{ tutor_especialidad_filter }}">
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-secondary mb-3">Filtrar</button>
+                    </form>
+                    <div class="list-group mb-4">
+                        {% for tutor in tutores %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ tutor.usuario.get_full_name }}</h5>
+                                <small class="badge bg-info">
+                                    Proyectos: {{ tutor.proyectos_actuales }}/{{ tutor.max_proyectos }}
+                                </small>
+                            </div>
+                            <p class="mb-1">
+                                <strong>Email:</strong> {{ tutor.usuario.email }}<br>
+                                <strong>Especialidades:</strong> {{ tutor.especialidades|truncatechars:100 }}
+                            </p>
+                            <div class="mt-2">
+                                <!-- Botón para enviar mensaje a este tutor -->
+                                <button type="button" class="btn btn-sm btn-outline-primary me-1" 
+                                        data-bs-toggle="modal" data-bs-target="#mensajeModal"
+                                        data-destinatario-id="{{ tutor.usuario.id }}"
+                                        data-destinatario-nombre="{{ tutor.usuario.get_full_name }}"
+                                        data-tipo-destinatario="tutor">
+                                    <i class="bi bi-envelope"></i> Enviar Mensaje
+                                </button>
+                                <a href="{% url 'editar_tutor' tutor.id %}" class="btn btn-sm btn-warning me-1">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </a>
+                                <a href="{% url 'eliminar_tutor' tutor.id %}" class="btn btn-sm btn-danger me-1">
+                                    <i class="bi bi-trash"></i> Eliminar
+                                </a>
+                                <a href="{% url 'ver_tutor' tutor.id %}" class="btn btn-sm btn-info">
+                                    <i class="bi bi-info-circle"></i> Ver Info
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <a href="{% url 'lista_proyectos' %}" class="btn btn-info w-100 py-3 text-white">
-                        <i class="bi bi-folder me-2"></i> Ver Proyectos
-                    </a>
+                
+                <!-- Sección de Emprendedores -->
+                <div class="col-md-6">
+                    <h4>Emprendedores</h4>
+                    <form method="get" action="{% url 'panel_admin' %}">
+                        <input type="hidden" name="search" value="{{ search_query }}">
+                        <div class="mb-3">
+                            <label>Filtrar por tutor asignado:</label>
+                            <select name="emprendedor_tutor" class="form-select">
+                                <option value="">Todos</option>
+                                {% for tutor in todos_tutores %}
+                                <option value="{{ tutor.id }}" {% if emprendedor_tutor_filter == tutor.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ tutor.usuario.get_full_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-secondary mb-3">Filtrar</button>
+                    </form>
+                    <div class="list-group">
+                        {% for emprendedor in emprendedores %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ emprendedor.get_full_name }}</h5>
+                                <span class="badge bg-primary">
+                                    Proyectos: {{ emprendedor.num_proyectos }}
+                                </span>
+                            </div>
+                            <p class="mb-1">
+                                <strong>Usuario:</strong> {{ emprendedor.username }}<br>
+                                <strong>Email:</strong> {{ emprendedor.email }}<br>
+                                <strong>Gestor de Ciencias asignado:</strong> 
+                                {% if emprendedor.emprendedor_profile.tutor %}
+                                    {{ emprendedor.emprendedor_profile.tutor.usuario.get_full_name }}
+                                {% else %}
+                                    Sin asignar
+                                {% endif %}
+                            </p>
+                            <div class="mt-2">
+                                <!-- Botón para enviar mensaje a este emprendedor -->
+                                <button type="button" class="btn btn-sm btn-outline-primary me-1" 
+                                        data-bs-toggle="modal" data-bs-target="#mensajeModal"
+                                        data-destinatario-id="{{ emprendedor.id }}"
+                                        data-destinatario-nombre="{{ emprendedor.get_full_name }}"
+                                        data-tipo-destinatario="emprendedor">
+                                    <i class="bi bi-envelope"></i> Enviar Mensaje
+                                </button>
+                                <a href="{% url 'ver_emprendedor' emprendedor.id %}" class="btn btn-sm btn-info">
+                                    <i class="bi bi-info-circle"></i> Ver Info
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sección de Proyectos -->
+            <div class="mt-4">
+                <h4>Proyectos</h4>
+                <form method="get" action="{% url 'panel_admin' %}">
+                    <input type="hidden" name="search" value="{{ search_query }}">
+                    <div class="mb-3">
+                        <label>Filtrar por estado:</label>
+                        <select name="proyecto_estado" class="form-select">
+                            <option value="">Todos</option>
+                            {% for estado_key, estado_value in estados_proyecto %}
+                            <option value="{{ estado_key }}" {% if proyecto_estado_filter == estado_key %}selected{% endif %}>
+                                {{ estado_value }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-secondary mb-3">Filtrar</button>
+                </form>
+                <div class="list-group">
+                    {% for proyecto in proyectos %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{{ proyecto.nombre_proyecto }}</h5>
+                            <span class="badge 
+                                {% if proyecto.estado == 'pendiente' %}bg-secondary
+                                {% elif proyecto.estado == 'revision' %}bg-info
+                                {% elif proyecto.estado == 'aceptado' %}bg-success
+                                {% elif proyecto.estado == 'asignado' %}bg-primary
+                                {% else %}bg-danger{% endif %}">
+                                {{ proyecto.get_estado_display }}
+                            </span>
+                        </div>
+                        <p class="mb-1">{{ proyecto.descripcion|truncatechars:100 }}</p>
+                        <small>Solicitado por: {{ proyecto.nombre_completo }}</small>
+                        <div class="mt-2">
+                            <strong>Gestor de Ciencias asignado:</strong> 
+                            {% if proyecto.tutor %}
+                                {{ proyecto.tutor.usuario.get_full_name }} ({{ proyecto.tutor.proyectos_actuales }}/{{ proyecto.tutor.max_proyectos }})
+                            {% else %}
+                                Sin asignar
+                            {% endif %}
+                        </div>
+                        <!-- BOTÓN DE ASIGNAR TUTOR A PROYECTO -->
+                        <div class="mt-2">
+                            <a href="{% url 'asignar_tutor' proyecto.id %}" class="btn btn-sm btn-success">
+                                <i class="bi bi-person-plus"></i> Asignar Gestor de Ciencias
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
@@ -59,7 +211,7 @@
                         <div>
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="tipo_destinatario" id="tipo_tutor" value="tutor" checked>
-                                <label class="form-check-label" for="tipo_tutor">Tutor</label>
+                                <label class="form-check-label" for="tipo_tutor">Gestor de Ciencias</label>
                             </div>
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="tipo_destinatario" id="tipo_emprendedor" value="emprendedor">
@@ -71,7 +223,7 @@
                         <label class="form-label">Seleccionar destinatario:</label>
                         <select class="form-select" id="destinatario_select" name="destinatario_id" required>
                             <option value="">-- Seleccione un destinatario --</option>
-                            <option value="" disabled>--- Tutores ---</option>
+                            <option value="" disabled>--- Gestores de Ciencias ---</option>
                             {% for tutor in tutores %}
                             <option value="{{ tutor.usuario.id }}" data-tipo="tutor">{{ tutor.usuario.get_full_name }}</option>
                             {% endfor %}
