@@ -17,7 +17,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
-from .models import Mensaje, SesionMentoria, ArchivoSesion, EventoSesion, PropuestaHorario, Proyecto, Tutor, Tarea, EmprendedorProfile, Convocatoria, Categoria, DocumentoPlantilla, ParticipanteForum, ConfiguracionCorreo, BancoProblema
+from .models import Mensaje, SesionMentoria, ArchivoSesion, EventoSesion, PropuestaHorario, Proyecto, Tutor, Tarea, EmprendedorProfile, Convocatoria, Categoria, DocumentoPlantilla, ParticipanteForum, ConfiguracionCorreo, BancoProblema, SolicitudVentanilla
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -37,7 +37,17 @@ from django.http import JsonResponse
 
 # Vista de inicio
 def inicio(request):
-    return render(request, 'emprendedores/inicio.html')
+    total_proyectos = Proyecto.objects.count()
+    proyectos_activos = Proyecto.objects.filter(estado__in=['revision', 'asignado']).count()
+    proyectos_finalizados = Proyecto.objects.filter(estado='finalizado').count()
+    total_emprendedores = EmprendedorProfile.objects.count()
+
+    return render(request, 'emprendedores/inicio.html', {
+        'total_proyectos': total_proyectos,
+        'proyectos_activos': proyectos_activos,
+        'proyectos_finalizados': proyectos_finalizados,
+        'total_emprendedores': total_emprendedores,
+    })
 
 # Vista de registro de proyecto
 def registro_proyecto(request):
@@ -208,6 +218,9 @@ def panel_admin(request):
         else:
             messages.error(request, "Error al enviar el mensaje. Por favor, verifica los datos.")
 
+    solicitudes_ventanilla = SolicitudVentanilla.objects.all().order_by('-fecha_solicitud')[:20]
+    solicitudes_nuevas = SolicitudVentanilla.objects.filter(estado='recibida').count()
+
     return render(request, 'emprendedores/admin.html', {
         'tutores': tutores,
         'emprendedores': emprendedores,
@@ -218,6 +231,8 @@ def panel_admin(request):
         'tutor_especialidad_filter': tutor_especialidad_filter,
         'emprendedor_tutor_filter': emprendedor_tutor_filter,
         'proyecto_estado_filter': proyecto_estado_filter,
+        'solicitudes_ventanilla': solicitudes_ventanilla,
+        'solicitudes_nuevas': solicitudes_nuevas,
     })
 
 # Vista de panel de tutor
@@ -1728,14 +1743,56 @@ def lista_emprendedores(request):
             EmprendedorProfile.objects.create(user=emprendedor)
     return render(request, 'emprendedores/lista_emprendedores.html', {'emprendedores': emprendedores})
 
-
+# Fltrados de lista proyectos 
 @login_required
 def lista_proyectos(request):
     if not request.user.is_superuser:
         return redirect('panel_usuario')
-    proyectos = Proyecto.objects.all()
-    return render(request, 'emprendedores/lista_proyectos.html', {'proyectos': proyectos})    
 
+    proyectos = Proyecto.objects.all()
+
+    # Filtro por estado
+    estado_filter = request.GET.get('estado', '')
+    if estado_filter:
+        proyectos = proyectos.filter(estado=estado_filter)
+
+    # Filtro por presupuesto (manejo de NULL)
+    presupuesto_min = request.GET.get('presupuesto_min', '').strip()
+    presupuesto_max = request.GET.get('presupuesto_max', '').strip()
+    if presupuesto_min:
+        # Convertir a número
+        try:
+            min_val = float(presupuesto_min)
+            # Incluir proyectos con presupuesto NULL? Normalmente no se incluyen.
+            # Si quieres incluir NULL, usa Q objects. Por ahora, filtramos solo los que tienen valor.
+            proyectos = proyectos.filter(presupuesto_estimado__gte=min_val)
+        except ValueError:
+            pass  # ignorar valor no numérico
+    if presupuesto_max:
+        try:
+            max_val = float(presupuesto_max)
+            proyectos = proyectos.filter(presupuesto_estimado__lte=max_val)
+        except ValueError:
+            pass
+
+    # Filtro por fecha
+    fecha_desde = request.GET.get('fecha_desde', '').strip()
+    fecha_hasta = request.GET.get('fecha_hasta', '').strip()
+    if fecha_desde:
+        proyectos = proyectos.filter(fecha_registro__date__gte=fecha_desde)
+    if fecha_hasta:
+        proyectos = proyectos.filter(fecha_registro__date__lte=fecha_hasta)
+
+    context = {
+        'proyectos': proyectos,
+        'estados_proyecto': Proyecto.ESTADOS,
+        'estado_filter': estado_filter,
+        'presupuesto_min': presupuesto_min,
+        'presupuesto_max': presupuesto_max,
+        'fecha_desde': fecha_desde,
+        'fecha_hasta': fecha_hasta,
+    }
+    return render(request, 'emprendedores/lista_proyectos.html', context)
 
 
 #  crear tareas de forma manual 
@@ -1883,3 +1940,152 @@ def solicitar_sesion_emprendedor(request, proyecto_id):
             messages.error(request, f'Error al enviar la solicitud: {str(e)}')
  
     return redirect('panel_emprendedor')
+
+@login_required
+def bandeja_emprendedor(request):
+    proyectos = Proyecto.objects.filter(usuario=request.user)
+
+    mensajes_recibidos = Mensaje.objects.filter(
+        destinatario=request.user
+    ).order_by('-fecha_envio')
+
+    mensajes_enviados = Mensaje.objects.filter(
+        remitente=request.user
+    ).order_by('-fecha_envio')
+
+    no_leidos = mensajes_recibidos.filter(leido=False).count()
+
+    sesiones_pendientes = SesionMentoria.objects.filter(
+        proyecto__in=proyectos,
+        estado='propuesta',
+    ).exclude(creada_por=request.user).order_by('fecha_propuesta')
+
+    return render(request, 'emprendedores/bandeja_emprendedor.html', {
+        'mensajes_recibidos': mensajes_recibidos,
+        'mensajes_enviados': mensajes_enviados,
+        'no_leidos': no_leidos,
+        'sesiones_pendientes': sesiones_pendientes,
+        'proyectos': proyectos,
+    })
+
+
+def ventanilla_unica(request):
+    total_proyectos = Proyecto.objects.count()
+    proyectos_activos = Proyecto.objects.filter(estado__in=['revision', 'asignado']).count()
+    proyectos_finalizados = Proyecto.objects.filter(estado='finalizado').count()
+    proyectos_publicos = Proyecto.objects.filter(
+        estado__in=['asignado', 'finalizado']
+    ).order_by('-fecha_registro')[:6]
+    demandas = BancoProblema.objects.filter(resuelto=False).order_by('-año', 'numero')[:6]
+    return render(request, 'emprendedores/ventanilla_unica.html', {
+        'total_proyectos': total_proyectos,
+        'proyectos_activos': proyectos_activos,
+        'proyectos_finalizados': proyectos_finalizados,
+        'proyectos_publicos': proyectos_publicos,
+        'demandas': demandas,
+    })
+
+
+def enviar_solicitud_ventanilla(request):
+    if request.method == 'POST':
+        tipo = request.POST.get('tipo', '').strip()
+        nombre_contacto = request.POST.get('nombre_contacto', '').strip()
+        empresa = request.POST.get('empresa', '').strip()
+        email = request.POST.get('email', '').strip()
+        telefono = request.POST.get('telefono', '').strip()
+        nombre_proyecto = request.POST.get('nombre_proyecto', '').strip()
+        descripcion = request.POST.get('descripcion', '').strip()
+        area_interes = request.POST.get('area_interes', '').strip()
+        documentacion = request.FILES.get('documentacion')
+
+        if nombre_contacto and email and descripcion and tipo:
+            solicitud = SolicitudVentanilla.objects.create(
+                tipo=tipo,
+                nombre_contacto=nombre_contacto,
+                empresa=empresa,
+                email=email,
+                telefono=telefono,
+                nombre_proyecto=nombre_proyecto,
+                descripcion=descripcion,
+                area_interes=area_interes,
+                documentacion=documentacion,
+            )
+
+            # Enviar email de confirmación al solicitante
+            try:
+                asunto_solicitante = f'Solicitud recibida — Expediente {solicitud.numero_expediente}'
+                cuerpo_solicitante = (
+                    f'Estimado/a {nombre_contacto},\n\n'
+                    f'Hemos recibido su solicitud correctamente.\n\n'
+                    f'Número de expediente: {solicitud.numero_expediente}\n'
+                    f'Tipo: {solicitud.get_tipo_display()}\n'
+                    f'Fecha: {solicitud.fecha_solicitud.strftime("%d/%m/%Y %H:%M")}\n\n'
+                    f'En breve nos pondremos en contacto con usted.\n\n'
+                    f'Desoft Santiago de Cuba\nincubadora@desoft.cu'
+                )
+                send_mail(asunto_solicitante, cuerpo_solicitante, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=True)
+            except Exception:
+                pass
+
+            # Notificar al administrador
+            try:
+                tipo_label = solicitud.get_tipo_display()
+                asunto_admin = f'Nueva {tipo_label} en Ventanilla Única — {solicitud.numero_expediente}'
+                cuerpo_admin = (
+                    f'Se ha recibido una nueva solicitud en la Ventanilla Única.\n\n'
+                    f'Expediente: {solicitud.numero_expediente}\n'
+                    f'Tipo: {tipo_label}\n'
+                    f'Contacto: {nombre_contacto}\n'
+                    f'Empresa: {empresa or "No especificada"}\n'
+                    f'Email: {email}\n'
+                    f'Teléfono: {telefono or "No especificado"}\n'
+                    f'Proyecto: {nombre_proyecto or area_interes or "—"}\n\n'
+                    f'Descripción:\n{descripcion}\n\n'
+                    f'Revise el panel de administración para gestionar esta solicitud.'
+                )
+                admin_email = settings.EMAIL_HOST_USER
+                send_mail(asunto_admin, cuerpo_admin, settings.DEFAULT_FROM_EMAIL, [admin_email], fail_silently=True)
+            except Exception:
+                pass
+
+            messages.success(request,
+                f'Solicitud recibida. Su número de expediente es: {solicitud.numero_expediente}. Le hemos enviado una confirmación a {email}.')
+        else:
+            messages.error(request, 'Por favor complete todos los campos obligatorios.')
+    return redirect('ventanilla_unica')
+
+
+@login_required
+def gestionar_solicitud_ventanilla(request, solicitud_id):
+    if not request.user.is_superuser:
+        messages.error(request, "No tienes permisos.")
+        return redirect('panel_admin')
+
+    solicitud = get_object_or_404(SolicitudVentanilla, id=solicitud_id)
+
+    if request.method == 'POST':
+        nuevo_estado = request.POST.get('estado', '').strip()
+        respuesta_email = request.POST.get('respuesta_email', '').strip()
+
+        if nuevo_estado in ['recibida', 'en_revision', 'aceptada', 'rechazada']:
+            solicitud.estado = nuevo_estado
+            solicitud.save()
+            messages.success(request, f'Estado actualizado a: {solicitud.get_estado_display()}')
+
+        # Si hay respuesta, enviar email al solicitante
+        if respuesta_email and solicitud.email:
+            try:
+                asunto = f'Respuesta a su solicitud {solicitud.numero_expediente} — Desoft Santiago de Cuba'
+                cuerpo = (
+                    f'Estimado/a {solicitud.nombre_contacto},\n\n'
+                    f'{respuesta_email}\n\n'
+                    f'Expediente: {solicitud.numero_expediente}\n'
+                    f'Estado actual: {solicitud.get_estado_display()}\n\n'
+                    f'Desoft Santiago de Cuba\nincubadora@desoft.cu'
+                )
+                send_mail(asunto, cuerpo, settings.DEFAULT_FROM_EMAIL, [solicitud.email], fail_silently=False)
+                messages.success(request, f'Respuesta enviada por correo a {solicitud.email}.')
+            except Exception as e:
+                messages.error(request, f'Error al enviar el correo: {str(e)}')
+
+    return redirect('panel_admin')

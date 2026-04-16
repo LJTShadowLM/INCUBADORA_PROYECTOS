@@ -101,10 +101,10 @@
                         {% endif %}
                     </div>
                     <div class="mt-2">
-                        <a href="{% url 'asignar_tutor' proyecto.id %}" class="btn btn-sm btn-success">
-                            <i class="bi bi-person-plus"></i> Asignar Tutor
-                        </a>
-                    </div>
+                    <a href="{% url 'detalle_proyecto' proyecto.id %}" class="btn btn-sm btn-primary">
+                  <i class="bi bi-eye"></i> Ver detalles
+                         </a>
+                     </div>
                 </div>
                 {% empty %}
                 <p class="text-muted">No hay proyectos que coincidan con los filtros seleccionados.</p>

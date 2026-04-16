@@ -1,0 +1,280 @@
+{% extends "emprendedores/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- Hero -->
+<section style="background: linear-gradient(135deg, #003366 0%, #0055a5 100%); color:white; padding:4rem 0; text-align:center;">
+    <div class="container">
+        <div class="mb-3">
+            <span style="background:rgba(255,255,255,0.15); padding:0.4rem 1.2rem; border-radius:20px; font-size:0.9rem; letter-spacing:1px;">
+                DESOFT SANTIAGO DE CUBA
+            </span>
+        </div>
+        <h1 style="font-size:2.5rem; font-weight:700; margin-bottom:1rem;">
+            Ventanilla Única de Proyectos Tecnológicos
+        </h1>
+        <p style="font-size:1.1rem; max-width:650px; margin:0 auto 2rem; opacity:0.9;">
+            Un solo punto de acceso para registrar solicitudes, publicar demandas tecnológicas y conectar con los especialistas de Desoft.
+        </p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a href="#solicitud-proyecto" class="btn btn-light btn-lg fw-bold">
+                <i class="bi bi-file-earmark-plus me-2"></i>Solicitar Proyecto
+            </a>
+            <a href="#demandas" class="btn btn-outline-light btn-lg fw-bold">
+                <i class="bi bi-cpu me-2"></i>Demandas Tecnológicas
+            </a>
+            <a href="#empleo" class="btn btn-outline-light btn-lg fw-bold">
+                <i class="bi bi-person-badge me-2"></i>Solicitud de Empleo
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Estadísticas -->
+<section style="background:#f0f4f8; padding:3rem 0;">
+    <div class="container">
+        <div class="row g-4 text-center">
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body py-4">
+                        <i class="bi bi-folder2-open display-5 text-primary mb-2"></i>
+                        <h2 class="fw-bold text-primary">{{ total_proyectos }}</h2>
+                        <p class="text-muted mb-0">Proyectos Registrados</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body py-4">
+                        <i class="bi bi-arrow-repeat display-5 text-warning mb-2"></i>
+                        <h2 class="fw-bold text-warning">{{ proyectos_activos }}</h2>
+                        <p class="text-muted mb-0">Proyectos en Proceso</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body py-4">
+                        <i class="bi bi-check-circle display-5 text-success mb-2"></i>
+                        <h2 class="fw-bold text-success">{{ proyectos_finalizados }}</h2>
+                        <p class="text-muted mb-0">Proyectos Finalizados</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body py-4">
+                        <i class="bi bi-cpu display-5 text-danger mb-2"></i>
+                        <h2 class="fw-bold text-danger">{{ demandas.count }}</h2>
+                        <p class="text-muted mb-0">Demandas Abiertas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Proyectos públicos -->
+{% if proyectos_publicos %}
+<section class="container my-5">
+    <h3 class="fw-bold mb-1">Proyectos Activos</h3>
+    <p class="text-muted mb-4">Proyectos tecnológicos actualmente en desarrollo o finalizados en Desoft Santiago de Cuba.</p>
+    <div class="row g-4">
+        {% for proyecto in proyectos_publicos %}
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 text-truncate">{{ proyecto.nombre_proyecto }}</h6>
+                    <span class="badge {% if proyecto.estado == 'finalizado' %}bg-success{% else %}bg-warning text-dark{% endif %} ms-2 flex-shrink-0">
+                        {{ proyecto.get_estado_display }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted" style="font-size:0.9rem;">{{ proyecto.descripcion|truncatewords:20 }}</p>
+                    <div class="mb-2">
+                        <small class="text-muted"><i class="bi bi-tag me-1"></i>{{ proyecto.get_sector_display }}</small>
+                    </div>
+                    <div class="progress" style="height:8px;">
+                        <div class="progress-bar {% if proyecto.progreso == 100 %}bg-success{% else %}bg-primary{% endif %}"
+                             style="width:{{ proyecto.progreso }}%;"></div>
+                    </div>
+                    <small class="text-muted">Progreso: {{ proyecto.progreso }}%</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Demandas Tecnológicas -->
+<section id="demandas" style="background:#f8f9fa; padding:3rem 0;">
+    <div class="container">
+        <h3 class="fw-bold mb-1">Demandas Tecnológicas</h3>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <p class="text-muted mb-0">Problemas y necesidades tecnológicas publicadas por Desoft que pueden ser resueltas mediante proyectos.</p>
+            {% if user.is_superuser %}
+            <a href="{% url 'agregar_problema' %}" class="btn btn-primary ms-3 flex-shrink-0">
+                <i class="bi bi-plus-circle me-1"></i>Publicar Demanda
+            </a>
+            {% endif %}
+        </div>
+        {% if demandas %}
+        <div class="row g-4">
+            {% for demanda in demandas %}
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge bg-primary">Problema #{{ demanda.numero }} — {{ demanda.año }}</span>
+                            <span class="badge {% if demanda.prioridad == 'alta' %}bg-danger{% elif demanda.prioridad == 'media' %}bg-warning text-dark{% else %}bg-info{% endif %}">
+                                {{ demanda.get_prioridad_display }}
+                            </span>
+                        </div>
+                        <h6 class="fw-bold">{{ demanda.objetivo|truncatewords:12 }}</h6>
+                        <p class="text-muted" style="font-size:0.9rem;">{{ demanda.problema|truncatewords:25 }}</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-0">
+                        <a href="#solicitud-proyecto" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-send me-1"></i>Postularme a esta demanda
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-4">
+            <i class="bi bi-cpu display-4 d-block mb-3"></i>
+            No hay demandas tecnológicas publicadas actualmente.
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Formulario Solicitud de Proyecto -->
+<section id="solicitud-proyecto" class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-9">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-file-earmark-plus me-2"></i>Solicitud de Proyecto / Demanda Tecnológica</h5>
+                </div>
+                <div class="card-body p-4">
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                    {% endif %}
+                    <p class="text-muted mb-4">Complete el formulario para registrar una solicitud. Recibirá un número de expediente para dar seguimiento.</p>
+                    <form method="post" action="{% url 'enviar_solicitud_ventanilla' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" name="tipo" value="proyecto">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Nombre completo *</label>
+                                <input type="text" name="nombre_contacto" class="form-control" required placeholder="Ej: Ana García Pérez">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Empresa / Organización</label>
+                                <input type="text" name="empresa" class="form-control" placeholder="Nombre de su empresa u organización">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Correo electrónico *</label>
+                                <input type="email" name="email" class="form-control" required placeholder="correo@ejemplo.com">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Teléfono</label>
+                                <input type="text" name="telefono" class="form-control" placeholder="Ej: +53 52345678">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Nombre del proyecto *</label>
+                                <input type="text" name="nombre_proyecto" class="form-control" required placeholder="Asigne un nombre a su proyecto o solicitud">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Descripción de la solicitud *</label>
+                                <textarea name="descripcion" class="form-control" rows="5" required
+                                          placeholder="Describa detalladamente su necesidad, proyecto o demanda tecnológica..."></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Documentación adjunta</label>
+                                <input type="file" name="documentacion" class="form-control">
+                                <div class="form-text">Puede adjuntar propuestas, especificaciones técnicas u otros documentos de referencia.</div>
+                            </div>
+                            <div class="col-12 text-end">
+                                <button type="submit" class="btn btn-primary btn-lg px-5">
+                                    <i class="bi bi-send me-2"></i>Enviar Solicitud
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Formulario Solicitud de Empleo -->
+<section id="empleo" style="background:#f0f4f8; padding:3rem 0;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-9">
+                <div class="card border-0 shadow">
+                    <div class="card-header" style="background:#003366; color:white;">
+                        <h5 class="mb-0"><i class="bi bi-person-badge me-2"></i>Solicitud de Empleo</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <p class="text-muted mb-4">¿Deseas formar parte del equipo de Desoft? Déjanos tus datos y nos pondremos en contacto contigo.</p>
+                        <form method="post" action="{% url 'enviar_solicitud_ventanilla' %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <input type="hidden" name="tipo" value="empleo">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Nombre completo *</label>
+                                    <input type="text" name="nombre_contacto" class="form-control" required placeholder="Ej: Carlos López Pérez">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Correo electrónico *</label>
+                                    <input type="email" name="email" class="form-control" required placeholder="correo@ejemplo.com">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Teléfono</label>
+                                    <input type="text" name="telefono" class="form-control" placeholder="Ej: +53 52345678">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Área de interés *</label>
+                                    <select name="area_interes" class="form-select" required>
+                                        <option value="">-- Seleccione --</option>
+                                        <option value="desarrollo_software">Desarrollo de Software</option>
+                                        <option value="redes">Redes y Comunicaciones</option>
+                                        <option value="ia_datos">Inteligencia Artificial / Datos</option>
+                                        <option value="ciberseguridad">Ciberseguridad</option>
+                                        <option value="gestion_proyectos">Gestión de Proyectos</option>
+                                        <option value="otro">Otro</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Descripción / Experiencia *</label>
+                                    <textarea name="descripcion" class="form-control" rows="4" required
+                                              placeholder="Cuéntanos sobre tu experiencia, habilidades y por qué te interesa trabajar en Desoft..."></textarea>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">CV / Documentos adjuntos</label>
+                                    <input type="file" name="documentacion" class="form-control">
+                                </div>
+                                <div class="col-12 text-end">
+                                    <button type="submit" class="btn btn-lg px-5 fw-bold" style="background:#003366; color:white;">
+                                        <i class="bi bi-send me-2"></i>Enviar Solicitud
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

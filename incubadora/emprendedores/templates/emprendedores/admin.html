@@ -16,36 +16,29 @@
                         <i class="bi bi-envelope"></i> Configurar Correo
                     </a>
                     <a href="{% url 'registrar_tutor' %}" class="btn btn-light me-2">
-                        <i class="bi bi-person-plus"></i> Registrar Gestor de Ciencias
+                        <i class="bi bi-person-plus"></i> Registrar Tutor
+                    </a>
+                    <!-- NUEVOS BOTONES PARA LISTAS (SOLO SE AÑADEN ESTOS TRES) -->
+                    <a href="{% url 'lista_proyectos' %}" class="btn btn-light me-2">
+                        <i class="bi bi-folder"></i> Ver Proyectos
+                    </a>
+                    <a href="{% url 'lista_tutores' %}" class="btn btn-light me-2">
+                        <i class="bi bi-people"></i> Ver Tutores
+                    </a>
+                    <a href="{% url 'lista_emprendedores' %}" class="btn btn-light me-2">
+                        <i class="bi bi-person"></i> Ver Emprendedores
                     </a>
                 </div>
             </div>
         </div>        
         <div class="card-body">
-            <!-- Barra de búsqueda general -->
-            <form method="get" action="{% url 'panel_admin' %}" class="mb-4">
-                <div class="row">
-                    <div class="col-md-6">
-                        <input type="text" name="search" class="form-control" placeholder="Buscar por nombre o usuario..." value="{{ search_query }}">
-                    </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary">Buscar</button>
-                    </div>
-                </div>
-            </form>
+            <!-- Se eliminó la barra de búsqueda general y todos los formularios de filtro dentro de cada sección -->
 
             <div class="row">
-                <!-- Sección de Gestores de Ciencias -->
+                <!-- Sección de Tutores -->
                 <div class="col-md-6">
-                    <h4>Gestores de Ciencias</h4>
-                    <form method="get" action="{% url 'panel_admin' %}">
-                        <input type="hidden" name="search" value="{{ search_query }}">
-                        <div class="mb-3">
-                            <label>Filtrar por especialidad:</label>
-                            <input type="text" name="tutor_especialidad" class="form-control" placeholder="Especialidad..." value="{{ tutor_especialidad_filter }}">
-                        </div>
-                        <button type="submit" class="btn btn-sm btn-secondary mb-3">Filtrar</button>
-                    </form>
+                    <h4>Tutores</h4>
+                    <!-- ELIMINADO: Formulario de filtro por especialidad -->
                     <div class="list-group mb-4">
                         {% for tutor in tutores %}
                         <div class="list-group-item">
@@ -86,21 +79,7 @@
                 <!-- Sección de Emprendedores -->
                 <div class="col-md-6">
                     <h4>Emprendedores</h4>
-                    <form method="get" action="{% url 'panel_admin' %}">
-                        <input type="hidden" name="search" value="{{ search_query }}">
-                        <div class="mb-3">
-                            <label>Filtrar por tutor asignado:</label>
-                            <select name="emprendedor_tutor" class="form-select">
-                                <option value="">Todos</option>
-                                {% for tutor in todos_tutores %}
-                                <option value="{{ tutor.id }}" {% if emprendedor_tutor_filter == tutor.id|stringformat:"s" %}selected{% endif %}>
-                                    {{ tutor.usuario.get_full_name }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-sm btn-secondary mb-3">Filtrar</button>
-                    </form>
+                    <!-- ELIMINADO: Formulario de filtro por tutor asignado -->
                     <div class="list-group">
                         {% for emprendedor in emprendedores %}
                         <div class="list-group-item">
@@ -113,7 +92,7 @@
                             <p class="mb-1">
                                 <strong>Usuario:</strong> {{ emprendedor.username }}<br>
                                 <strong>Email:</strong> {{ emprendedor.email }}<br>
-                                <strong>Gestor de Ciencias asignado:</strong> 
+                                <strong>Tutor asignado:</strong> 
                                 {% if emprendedor.emprendedor_profile.tutor %}
                                     {{ emprendedor.emprendedor_profile.tutor.usuario.get_full_name }}
                                 {% else %}
@@ -142,21 +121,7 @@
             <!-- Sección de Proyectos -->
             <div class="mt-4">
                 <h4>Proyectos</h4>
-                <form method="get" action="{% url 'panel_admin' %}">
-                    <input type="hidden" name="search" value="{{ search_query }}">
-                    <div class="mb-3">
-                        <label>Filtrar por estado:</label>
-                        <select name="proyecto_estado" class="form-select">
-                            <option value="">Todos</option>
-                            {% for estado_key, estado_value in estados_proyecto %}
-                            <option value="{{ estado_key }}" {% if proyecto_estado_filter == estado_key %}selected{% endif %}>
-                                {{ estado_value }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-sm btn-secondary mb-3">Filtrar</button>
-                </form>
+                <!-- ELIMINADO: Formulario de filtro por estado -->
                 <div class="list-group">
                     {% for proyecto in proyectos %}
                     <div class="list-group-item">
@@ -174,7 +139,7 @@
                         <p class="mb-1">{{ proyecto.descripcion|truncatechars:100 }}</p>
                         <small>Solicitado por: {{ proyecto.nombre_completo }}</small>
                         <div class="mt-2">
-                            <strong>Gestor de Ciencias asignado:</strong> 
+                            <strong>Tutor asignado:</strong> 
                             {% if proyecto.tutor %}
                                 {{ proyecto.tutor.usuario.get_full_name }} ({{ proyecto.tutor.proyectos_actuales }}/{{ proyecto.tutor.max_proyectos }})
                             {% else %}
@@ -184,7 +149,7 @@
                         <!-- BOTÓN DE ASIGNAR TUTOR A PROYECTO -->
                         <div class="mt-2">
                             <a href="{% url 'asignar_tutor' proyecto.id %}" class="btn btn-sm btn-success">
-                                <i class="bi bi-person-plus"></i> Asignar Gestor de Ciencias
+                                <i class="bi bi-person-plus"></i> Asignar Tutor
                             </a>
                         </div>
                     </div>
@@ -211,7 +176,7 @@
                         <div>
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="tipo_destinatario" id="tipo_tutor" value="tutor" checked>
-                                <label class="form-check-label" for="tipo_tutor">Gestor de Ciencias</label>
+                                <label class="form-check-label" for="tipo_tutor">Tutor</label>
                             </div>
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="tipo_destinatario" id="tipo_emprendedor" value="emprendedor">
@@ -223,7 +188,7 @@
                         <label class="form-label">Seleccionar destinatario:</label>
                         <select class="form-select" id="destinatario_select" name="destinatario_id" required>
                             <option value="">-- Seleccione un destinatario --</option>
-                            <option value="" disabled>--- Gestores de Ciencias ---</option>
+                            <option value="" disabled>--- Tutores ---</option>
                             {% for tutor in tutores %}
                             <option value="{{ tutor.usuario.id }}" data-tipo="tutor">{{ tutor.usuario.get_full_name }}</option>
                             {% endfor %}
@@ -250,4 +215,183 @@
         </div>
     </div>
 </div>
+
+<!-- Solicitudes de la Ventanilla Única -->
+<div class="container mt-4 mb-5">
+    <div class="card shadow">
+        <div class="card-header d-flex justify-content-between align-items-center" style="background:#003366; color:white;">
+            <h5 class="mb-0">
+                <i class="bi bi-building me-2"></i>Solicitudes de la Ventanilla Única
+            </h5>
+            {% if solicitudes_nuevas > 0 %}
+            <span class="badge bg-danger">{{ solicitudes_nuevas }} nuevas</span>
+            {% endif %}
+        </div>
+        <div class="card-body p-0">
+            {% if solicitudes_ventanilla %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Expediente</th>
+                            <th>Tipo</th>
+                            <th>Contacto</th>
+                            <th>Empresa</th>
+                            <th>Proyecto / Área</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sol in solicitudes_ventanilla %}
+                        <tr>
+                            <td><code>{{ sol.numero_expediente }}</code></td>
+                            <td>
+                                <span class="badge {% if sol.tipo == 'proyecto' %}bg-primary{% elif sol.tipo == 'demanda' %}bg-info{% else %}bg-secondary{% endif %}">
+                                    {{ sol.get_tipo_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <strong>{{ sol.nombre_contacto }}</strong><br>
+                                <small class="text-muted">{{ sol.email }}</small>
+                                {% if sol.telefono %}<br><small class="text-muted">{{ sol.telefono }}</small>{% endif %}
+                            </td>
+                            <td>{{ sol.empresa|default:"—" }}</td>
+                            <td>
+                                {% if sol.nombre_proyecto %}
+                                    {{ sol.nombre_proyecto }}
+                                {% elif sol.area_interes %}
+                                    {{ sol.area_interes }}
+                                {% else %}—{% endif %}
+                                <br>
+                                <small class="text-muted">{{ sol.descripcion|truncatewords:8 }}</small>
+                            </td>
+                            <td><small>{{ sol.fecha_solicitud|date:"d/m/Y H:i" }}</small></td>
+                            <td>
+                                <span class="badge {% if sol.estado == 'recibida' %}bg-warning text-dark{% elif sol.estado == 'en_revision' %}bg-info{% elif sol.estado == 'aceptada' %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ sol.get_estado_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-1 flex-wrap">
+                                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
+                                            data-bs-target="#verSolicitudModal{{ sol.id }}">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <form method="post" action="{% url 'gestionar_solicitud_ventanilla' sol.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <select name="estado" class="form-select form-select-sm d-inline-block" style="width:auto;"
+                                                onchange="this.form.submit()">
+                                            <option value="recibida" {% if sol.estado == 'recibida' %}selected{% endif %}>Recibida</option>
+                                            <option value="en_revision" {% if sol.estado == 'en_revision' %}selected{% endif %}>En Revisión</option>
+                                            <option value="aceptada" {% if sol.estado == 'aceptada' %}selected{% endif %}>Aceptada</option>
+                                            <option value="rechazada" {% if sol.estado == 'rechazada' %}selected{% endif %}>Rechazada</option>
+                                        </select>
+                                    </form>
+                                    {% if sol.documentacion %}
+                                    <a href="{{ sol.documentacion.url }}" class="btn btn-sm btn-outline-primary" target="_blank" title="Descargar documento">
+                                        <i class="bi bi-paperclip"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-inbox display-4 d-block mb-3"></i>
+                No hay solicitudes recibidas aún
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modales de detalle por solicitud -->
+{% for sol in solicitudes_ventanilla %}
+<div class="modal fade" id="verSolicitudModal{{ sol.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="background:#003366; color:white;">
+                <h5 class="modal-title">
+                    <i class="bi bi-file-earmark-text me-2"></i>{{ sol.numero_expediente }} — {{ sol.get_tipo_display }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <strong>Contacto:</strong><br>{{ sol.nombre_contacto }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Empresa:</strong><br>{{ sol.empresa|default:"No especificada" }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Correo:</strong><br>{{ sol.email }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Teléfono:</strong><br>{{ sol.telefono|default:"No especificado" }}
+                    </div>
+                    {% if sol.nombre_proyecto %}
+                    <div class="col-12">
+                        <strong>Nombre del Proyecto:</strong><br>{{ sol.nombre_proyecto }}
+                    </div>
+                    {% endif %}
+                    {% if sol.area_interes %}
+                    <div class="col-12">
+                        <strong>Área de Interés:</strong><br>{{ sol.area_interes }}
+                    </div>
+                    {% endif %}
+                    <div class="col-12">
+                        <strong>Descripción:</strong>
+                        <p class="mt-1" style="white-space:pre-line;">{{ sol.descripcion }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Fecha de solicitud:</strong><br>{{ sol.fecha_solicitud|date:"d/m/Y H:i" }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Estado actual:</strong><br>
+                        <span class="badge {% if sol.estado == 'recibida' %}bg-warning text-dark{% elif sol.estado == 'en_revision' %}bg-info{% elif sol.estado == 'aceptada' %}bg-success{% else %}bg-danger{% endif %}">
+                            {{ sol.get_estado_display }}
+                        </span>
+                    </div>
+                    {% if sol.documentacion %}
+                    <div class="col-12">
+                        <strong>Documentación adjunta:</strong><br>
+                        <a href="{{ sol.documentacion.url }}" class="btn btn-sm btn-outline-primary mt-1" target="_blank">
+                            <i class="bi bi-paperclip me-1"></i>Descargar archivo
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <!-- Responder por email -->
+                    <div class="col-12 mt-3">
+                        <hr>
+                        <h6 class="fw-bold"><i class="bi bi-envelope me-2"></i>Responder por correo a {{ sol.email }}</h6>
+                        <form method="post" action="{% url 'gestionar_solicitud_ventanilla' sol.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="estado" value="{{ sol.estado }}">
+                            <div class="mb-2">
+                                <textarea name="respuesta_email" class="form-control" rows="4"
+                                          placeholder="Escriba aquí la respuesta que se enviará por correo al solicitante..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="bi bi-send me-1"></i>Enviar respuesta por correo
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
 {% endblock %}

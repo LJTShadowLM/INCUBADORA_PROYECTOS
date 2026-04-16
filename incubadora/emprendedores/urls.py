@@ -35,7 +35,8 @@ urlpatterns = [
          views.asignar_tutor_emprendedor, name='asignar_tutor_emprendedor'),
 
     path('panel/emprendedor/agregar-proyecto/', views.agregar_proyecto, name='agregar_proyecto'),
-
+    path('panel/emprendedor/bandeja/', views.bandeja_emprendedor, name='bandeja_emprendedor'),
+    
     # Nuevas URLs para tutor
     path('tareas/<int:tarea_id>/completar/', views.completar_tarea_ajax, name='completar_tarea_ajax'),
     path('enviar-mensaje/', views.enviar_mensaje, name='enviar_mensaje'),
@@ -114,5 +115,14 @@ urlpatterns = [
     path('panel/admin/proyectos/', views.lista_proyectos, name='lista_proyectos'),
     
     path('panel/tutor/crear-tarea/', views.crear_tarea_tutor, name='crear_tarea_tutor'),
-     path('panel/tutor/bandeja/', views.bandeja_tutor, name='bandeja_tutor'),
+    path('panel/tutor/bandeja/', views.bandeja_tutor, name='bandeja_tutor'),
+    
+    #Ventanilla 
+    path('ventanilla-unica/', views.ventanilla_unica, name='ventanilla_unica'),
+    path('ventanilla-unica/solicitud/', views.enviar_solicitud_ventanilla, name='enviar_solicitud_ventanilla'),
+    path('panel/emprendedor/bandeja/', views.bandeja_emprendedor, name='bandeja_emprendedor'),
+    path('ventanilla-unica/solicitud/<int:solicitud_id>/gestionar/', views.gestionar_solicitud_ventanilla, name='gestionar_solicitud_ventanilla'),
+
+
+
 ]

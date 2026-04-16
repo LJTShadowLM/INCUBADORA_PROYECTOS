@@ -4,9 +4,14 @@
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Mis Proyectos</h2>
-        <a href="{% url 'agregar_proyecto' %}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Nuevo Proyecto
-        </a>
+        <div class="d-flex gap-2">
+            <a href="{% url 'bandeja_emprendedor' %}" class="btn btn-outline-primary">
+                <i class="bi bi-inbox me-1"></i> Bandeja de Entrada
+            </a>
+            <a href="{% url 'agregar_proyecto' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nuevo Proyecto
+            </a>
+        </div>
     </div>
 
     {% if proyectos %}
@@ -39,21 +44,18 @@
                     
                     {% if proyecto.tutor %}
                     <div class="mb-2">
-                        <strong>Tutor asignado:</strong> {{ proyecto.tutor.usuario.get_full_name }}
+                        <strong>Gestor de Ciencias asignado:</strong> {{ proyecto.tutor.usuario.get_full_name }}
                     </div>
                     {% endif %}
                     
-                    <div class="d-flex gap-2 flex-wrap">
+                    <div class="d-flex gap-2">
                         <a href="{% url 'detalle_proyecto' proyecto.id %}" class="btn btn-outline-primary btn-sm">
                             Ver Detalles
                         </a>
                         
                         {% if proyecto.tutor %}
                         <button class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#mensajeModal{{ proyecto.id }}">
-                            <i class="bi bi-chat"></i> Mensaje al Tutor
-                        </button>
-                        <button class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#sesionModal{{ proyecto.id }}">
-                            <i class="bi bi-calendar-plus"></i> Solicitar Sesión
+                            <i class="bi bi-chat"></i> Mensaje al Gestor de Ciencias
                         </button>
                         {% endif %}
                     </div>
@@ -67,7 +69,7 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Enviar Mensaje al Tutor</h5>
+                        <h5 class="modal-title">Enviar Mensaje al Gestor de Ciencias</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <form method="post" action="{% url 'enviar_mensaje' %}">
@@ -91,75 +93,6 @@
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                             <button type="submit" class="btn btn-primary">Enviar Mensaje</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal solicitar sesión de mentoría -->
-        <div class="modal fade" id="sesionModal{{ proyecto.id }}" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header bg-info text-white">
-                        <h5 class="modal-title">
-                            <i class="bi bi-calendar-plus me-2"></i>Solicitar Sesión de Mentoría
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                    </div>
-                    <form method="post" action="{% url 'solicitar_sesion_emprendedor' proyecto.id %}">
-                        {% csrf_token %}
-                        <div class="modal-body">
-                            <p class="text-muted mb-3">
-                                Tu tutor: <strong>{{ proyecto.tutor.usuario.get_full_name }}</strong> — 
-                                Proyecto: <strong>{{ proyecto.nombre_proyecto }}</strong>
-                            </p>
-                            <div class="mb-3">
-                                <label class="form-label">Objetivo de la sesión *</label>
-                                <input type="text" name="objetivo" class="form-control" required
-                                       placeholder="Ej: Revisar avance del módulo de usuarios">
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Tipo de sesión *</label>
-                                    <select name="tipo" class="form-select" required>
-                                        <option value="seguimiento">Seguimiento</option>
-                                        <option value="revision_inicial">Revisión Inicial</option>
-                                        <option value="presentacion_avance">Presentación de Avance</option>
-                                        <option value="problematica">Resolución de Problemática</option>
-                                        <option value="otro">Otro</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Formato</label>
-                                    <select name="formato" class="form-select">
-                                        <option value="virtual">Virtual</option>
-                                        <option value="presencial">Presencial</option>
-                                        <option value="hibrido">Híbrido</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Fecha y hora propuesta *</label>
-                                    <input type="datetime-local" name="fecha_propuesta" class="form-control" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Duración (minutos)</label>
-                                    <input type="number" name="duracion" class="form-control" value="60" min="15" max="240">
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Agenda / Temas a tratar</label>
-                                <textarea name="agenda" class="form-control" rows="3"
-                                          placeholder="Describe los temas que quieres tratar en la sesión..."></textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <button type="submit" class="btn btn-info text-white">
-                                <i class="bi bi-send me-1"></i> Enviar Solicitud
-                            </button>
                         </div>
                     </form>
                 </div>

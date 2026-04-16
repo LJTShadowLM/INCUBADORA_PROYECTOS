@@ -1,0 +1,344 @@
+{% extends "emprendedores/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="card shadow mb-3">
+                <div class="card-body p-2">
+                    <!-- Nuevo Mensaje -->
+                    <button class="btn btn-primary w-100 mb-2" data-bs-toggle="modal" data-bs-target="#nuevoMensajeModal">
+                        <i class="bi bi-pencil-square me-1"></i> Nuevo Mensaje
+                    </button>
+                    <div class="list-group list-group-flush">
+                        <button class="list-group-item list-group-item-action active" id="btn-recibidos" onclick="mostrarSeccion('recibidos')">
+                            <i class="bi bi-inbox me-2"></i> Recibidos
+                            {% if no_leidos > 0 %}
+                            <span class="badge bg-danger float-end">{{ no_leidos }}</span>
+                            {% endif %}
+                        </button>
+                        <button class="list-group-item list-group-item-action" id="btn-enviados" onclick="mostrarSeccion('enviados')">
+                            <i class="bi bi-send me-2"></i> Enviados
+                        </button>
+                        <button class="list-group-item list-group-item-action" id="btn-sesiones" onclick="mostrarSeccion('sesiones')">
+                            <i class="bi bi-calendar-check me-2"></i> Sesiones
+                            {% if sesiones_pendientes.count > 0 %}
+                            <span class="badge bg-warning text-dark float-end">{{ sesiones_pendientes.count }}</span>
+                            {% endif %}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <a href="{% url 'panel_emprendedor' %}" class="btn btn-outline-secondary w-100">
+                <i class="bi bi-arrow-left me-1"></i> Volver al Panel
+            </a>
+        </div>
+
+        <!-- Panel principal -->
+        <div class="col-md-9">
+
+            <!-- RECIBIDOS -->
+            <div id="seccion-recibidos">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-inbox me-2"></i>Bandeja de Entrada</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if mensajes_recibidos %}
+                        <div class="list-group list-group-flush">
+                            {% for mensaje in mensajes_recibidos %}
+                            <div class="list-group-item list-group-item-action {% if not mensaje.leido %}fw-bold bg-light{% endif %}"
+                                 style="cursor:pointer" onclick="abrirMensaje('rec-{{ mensaje.id }}')">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="d-flex align-items-center gap-2">
+                                        {% if not mensaje.leido %}
+                                        <span class="badge bg-primary">Nuevo</span>
+                                        {% endif %}
+                                        <span>{{ mensaje.remitente.get_full_name|default:mensaje.remitente.username }}</span>
+                                    </div>
+                                    <small class="text-muted">{{ mensaje.fecha_envio|date:"d/m/Y H:i" }}</small>
+                                </div>
+                                <div class="text-truncate">{{ mensaje.asunto }}</div>
+
+                                <div id="rec-{{ mensaje.id }}" class="mt-3 d-none">
+                                    <hr>
+                                    <p class="mb-2"><strong>De:</strong> {{ mensaje.remitente.get_full_name|default:mensaje.remitente.username }}</p>
+                                    <p class="mb-2"><strong>Asunto:</strong> {{ mensaje.asunto }}</p>
+                                    <p class="mb-3" style="white-space: pre-line;">{{ mensaje.contenido }}</p>
+                                    {% if mensaje.archivo %}
+                                    <a href="{{ mensaje.archivo.url }}" class="btn btn-sm btn-outline-primary mb-2" target="_blank">
+                                        <i class="bi bi-paperclip me-1"></i> Descargar adjunto
+                                    </a>
+                                    {% endif %}
+                                    <div class="d-flex gap-2 mt-2">
+                                        <button class="btn btn-sm btn-primary"
+                                                onclick="event.stopPropagation(); prepararRespuesta('{{ mensaje.remitente.id }}', '{{ mensaje.remitente.get_full_name|default:mensaje.remitente.username }}', 'RE: {{ mensaje.asunto }}')"
+                                                data-bs-toggle="modal" data-bs-target="#nuevoMensajeModal">
+                                            <i class="bi bi-reply me-1"></i> Responder
+                                        </button>
+                                        {% if not mensaje.leido %}
+                                        <a href="{% url 'marcar_mensaje_leido' mensaje.id %}"
+                                           class="btn btn-sm btn-outline-secondary"
+                                           onclick="event.stopPropagation();">
+                                            <i class="bi bi-check2 me-1"></i> Marcar leído
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="bi bi-inbox display-4 d-block mb-3"></i>
+                            No tienes mensajes recibidos
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- ENVIADOS -->
+            <div id="seccion-enviados" class="d-none">
+                <div class="card shadow">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0"><i class="bi bi-send me-2"></i>Mensajes Enviados</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if mensajes_enviados %}
+                        <div class="list-group list-group-flush">
+                            {% for mensaje in mensajes_enviados %}
+                            <div class="list-group-item list-group-item-action"
+                                 style="cursor:pointer" onclick="abrirMensaje('env-{{ mensaje.id }}')">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <span>Para: {{ mensaje.destinatario.get_full_name|default:mensaje.destinatario.username }}</span>
+                                    <small class="text-muted">{{ mensaje.fecha_envio|date:"d/m/Y H:i" }}</small>
+                                </div>
+                                <div class="text-truncate text-muted">{{ mensaje.asunto }}</div>
+                                <div id="env-{{ mensaje.id }}" class="mt-3 d-none">
+                                    <hr>
+                                    <p class="mb-2"><strong>Para:</strong> {{ mensaje.destinatario.get_full_name|default:mensaje.destinatario.username }}</p>
+                                    <p class="mb-2"><strong>Asunto:</strong> {{ mensaje.asunto }}</p>
+                                    <p class="mb-3" style="white-space: pre-line;">{{ mensaje.contenido }}</p>
+                                    {% if mensaje.archivo %}
+                                    <a href="{{ mensaje.archivo.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                        <i class="bi bi-paperclip me-1"></i> Ver adjunto
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="bi bi-send display-4 d-block mb-3"></i>
+                            No has enviado mensajes
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- SESIONES PENDIENTES DE RESPUESTA -->
+            <div id="seccion-sesiones" class="d-none">
+                <div class="card shadow">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="bi bi-calendar-check me-2"></i>Sesiones por Responder</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if sesiones_pendientes %}
+                        <div class="list-group list-group-flush">
+                            {% for sesion in sesiones_pendientes %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong>{{ sesion.objetivo }}</strong>
+                                        <p class="mb-1 text-muted">
+                                            <i class="bi bi-folder2 me-1"></i>{{ sesion.proyecto.nombre_proyecto }}
+                                        </p>
+                                        <small class="text-muted">
+                                            {{ sesion.get_tipo_display }} · {{ sesion.fecha_propuesta|date:"d/m/Y H:i" }} · {{ sesion.duracion }} min · {{ sesion.get_formato_display }}
+                                        </small>
+                                        {% if sesion.agenda %}
+                                        <p class="mb-0 mt-1"><small><strong>Agenda:</strong> {{ sesion.agenda }}</small></p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="mt-2 d-flex gap-2">
+                                    <button type="button" class="btn btn-sm btn-success"
+                                            data-bs-toggle="modal" data-bs-target="#aceptarModal{{ sesion.id }}">
+                                        <i class="bi bi-check-circle me-1"></i> Aceptar
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger"
+                                            data-bs-toggle="modal" data-bs-target="#rechazarModal{{ sesion.id }}">
+                                        <i class="bi bi-x-circle me-1"></i> Rechazar
+                                    </button>
+                                    <a href="{% url 'detalle_sesion' sesion.id %}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-eye me-1"></i> Ver detalles
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="bi bi-calendar-check display-4 d-block mb-3"></i>
+                            No tienes sesiones pendientes de respuesta
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nuevo Mensaje -->
+<div class="modal fade" id="nuevoMensajeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Nuevo Mensaje</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'enviar_mensaje' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Destinatario *</label>
+                        <select name="destinatario_id" class="form-select" id="select-destinatario" required>
+                            <option value="">-- Seleccione --</option>
+                            {% for proyecto in proyectos %}
+                                {% if proyecto.tutor %}
+                                <option value="{{ proyecto.tutor.usuario.id }}" data-tipo="tutor">
+                                    {{ proyecto.tutor.usuario.get_full_name }} (Gestor de Ciencias — {{ proyecto.nombre_proyecto }})
+                                </option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <input type="hidden" name="tipo_destinatario" id="tipo-destinatario-hidden" value="tutor">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Asunto *</label>
+                        <input type="text" name="asunto" class="form-control" id="input-asunto" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mensaje *</label>
+                        <textarea name="contenido" class="form-control" rows="5" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Adjuntar archivo (opcional)</label>
+                        <input type="file" name="archivo" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send me-1"></i> Enviar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modales Aceptar y Rechazar sesión -->
+{% for sesion in sesiones_pendientes %}
+<div class="modal fade" id="aceptarModal{{ sesion.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="bi bi-check-circle me-2"></i>Aceptar Sesión</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'responder_sesion' sesion.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="aceptar">
+                <div class="modal-body">
+                    <p><strong>Objetivo:</strong> {{ sesion.objetivo }}</p>
+                    <p><strong>Fecha:</strong> {{ sesion.fecha_propuesta|date:"d/m/Y H:i" }}</p>
+                    <p><strong>Formato:</strong> {{ sesion.get_formato_display }}</p>
+                    <p class="text-muted">Al aceptar, se confirmará la sesión y se notificará al Gestor de Ciencias.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle me-1"></i> Confirmar Aceptación
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="rechazarModal{{ sesion.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-x-circle me-2"></i>Rechazar Sesión</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'responder_sesion' sesion.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="rechazar">
+                <div class="modal-body">
+                    <p><strong>Objetivo:</strong> {{ sesion.objetivo }}</p>
+                    <p><strong>Fecha:</strong> {{ sesion.fecha_propuesta|date:"d/m/Y H:i" }}</p>
+                    <div class="mb-3">
+                        <label class="form-label">Motivo del rechazo *</label>
+                        <textarea name="mensaje" class="form-control" rows="3" required
+                                  placeholder="Explique por qué no puede asistir a esta sesión..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-x-circle me-1"></i> Confirmar Rechazo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<script>
+    function mostrarSeccion(tipo) {
+        ['recibidos', 'enviados', 'sesiones'].forEach(function(s) {
+            document.getElementById('seccion-' + s).classList.add('d-none');
+            document.getElementById('btn-' + s).classList.remove('active');
+        });
+        document.getElementById('seccion-' + tipo).classList.remove('d-none');
+        document.getElementById('btn-' + tipo).classList.add('active');
+    }
+
+    function abrirMensaje(id) {
+        var detalle = document.getElementById(id);
+        if (detalle) detalle.classList.toggle('d-none');
+    }
+
+    function prepararRespuesta(destinatarioId, nombre, asunto) {
+        var select = document.getElementById('select-destinatario');
+        var inputAsunto = document.getElementById('input-asunto');
+        for (var i = 0; i < select.options.length; i++) {
+            if (select.options[i].value == destinatarioId) {
+                select.selectedIndex = i;
+                break;
+            }
+        }
+        // Si no está en la lista, agregar opción temporal
+        if (select.value != destinatarioId) {
+            var opt = document.createElement('option');
+            opt.value = destinatarioId;
+            opt.text = nombre;
+            opt.setAttribute('data-tipo', 'tutor');
+            select.appendChild(opt);
+            select.value = destinatarioId;
+        }
+        inputAsunto.value = asunto;
+    }
+</script>
+{% endblock %}

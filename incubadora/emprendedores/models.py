@@ -448,3 +448,41 @@ class BancoProblema(models.Model):
 
     def __str__(self):
         return f"Problema {self.numero} - {self.año}"        
+
+class SolicitudVentanilla(models.Model):
+    TIPOS = (
+        ('proyecto', 'Solicitud de Proyecto'),
+        ('demanda', 'Demanda Tecnológica'),
+        ('empleo', 'Solicitud de Empleo'),
+    )
+    ESTADOS = (
+        ('recibida', 'Recibida'),
+        ('en_revision', 'En Revisión'),
+        ('aceptada', 'Aceptada'),
+        ('rechazada', 'Rechazada'),
+    )
+
+    tipo = models.CharField(max_length=20, choices=TIPOS)
+    estado = models.CharField(max_length=20, choices=ESTADOS, default='recibida')
+    nombre_contacto = models.CharField(max_length=200)
+    empresa = models.CharField(max_length=200, blank=True)
+    email = models.EmailField()
+    telefono = models.CharField(max_length=20, blank=True)
+    nombre_proyecto = models.CharField(max_length=200, blank=True)
+    descripcion = models.TextField()
+    area_interes = models.CharField(max_length=200, blank=True)
+    documentacion = models.FileField(upload_to='ventanilla/%Y/%m/', blank=True, null=True)
+    fecha_solicitud = models.DateTimeField(auto_now_add=True)
+    numero_expediente = models.CharField(max_length=20, unique=True, blank=True)
+
+    class Meta:
+        ordering = ['-fecha_solicitud']
+
+    def save(self, *args, **kwargs):
+        if not self.numero_expediente:
+            import random, string
+            self.numero_expediente = 'DSF-' + ''.join(random.choices(string.digits, k=6))
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.get_tipo_display()} - {self.nombre_contacto} ({self.numero_expediente})"

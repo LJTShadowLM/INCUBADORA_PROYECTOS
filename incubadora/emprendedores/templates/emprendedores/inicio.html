@@ -26,6 +26,10 @@
             <a href="{% url 'forum_evento' %}" class="btn btn-outline-light btn-lg" style="font-weight: bold; padding: 0.75rem 2rem;">
                 Forum Evento de Ciencias Técnicas e Innovación
             </a>
+            <a href="{% url 'ventanilla_unica' %}" class="btn btn-lg fw-bold" 
+   style="background:#00b4d8; color:white; padding: 0.75rem 2rem;">
+    <i class="bi bi-building me-2"></i>Ventanilla Única
+</a>
         </div>
     </div>
 </section>
@@ -120,4 +124,36 @@
         </div>
     </div>
 </section>
+<!-- Footer -->
+<footer style="background: #002244; color: #adb5bd; padding: 3rem 0 1.5rem;">
+    <div class="container">
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <h6 class="text-white fw-bold mb-3">
+                    <i class="bi bi-lightbulb me-2"></i>Incubadora Desoft
+                </h6>
+                <p style="font-size: 0.9rem;">Plataforma Integral de Incubación de Proyectos Tecnológicos de Desoft Santiago de Cuba.</p>
+            </div>
+            <div class="col-md-4">
+                <h6 class="text-white fw-bold mb-3">Contacto</h6>
+                <p style="font-size:0.9rem;" class="mb-1"><i class="bi bi-geo-alt me-2"></i>Santiago de Cuba, Cuba</p>
+                <p style="font-size:0.9rem;" class="mb-1"><i class="bi bi-telephone me-2"></i>(+53) 22 XXXXXX</p>
+                <p style="font-size:0.9rem;" class="mb-0"><i class="bi bi-envelope me-2"></i>incubadora@desoft.cu</p>
+            </div>
+            <div class="col-md-4">
+                <h6 class="text-white fw-bold mb-3">Accesos rápidos</h6>
+                <ul class="list-unstyled" style="font-size:0.9rem;">
+                    <li class="mb-1"><a href="{% url 'ventanilla_unica' %}" class="text-decoration-none" style="color:#adb5bd;">Ventanilla Única</a></li>
+                    <li class="mb-1"><a href="{% url 'forum_evento' %}" class="text-decoration-none" style="color:#adb5bd;">Forum Evento</a></li>
+                    <li class="mb-1"><a href="{% url 'login' %}" class="text-decoration-none" style="color:#adb5bd;">Iniciar Sesión</a></li>
+                </ul>
+            </div>
+        </div>
+        <hr style="border-color: #334466;">
+        <p class="text-center mb-0" style="font-size:0.85rem;">
+            &copy; 2026 Desoft — Empresa de Tecnologías de la Información. Santiago de Cuba. Todos los derechos reservados.
+            <span class="ms-2 text-muted">COR-DSF-2026-STC</span>
+        </p>
+    </div>
+</footer>
 {% endblock %}
