@@ -4,7 +4,7 @@
 <div class="container mt-5">
     <div class="card shadow">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <h3 class="mb-0">Tutores Registrados</h3>
+            <h3 class="mb-0">Gestores de Ciencia  Registrados</h3>
             <a href="{% url 'panel_admin' %}" class="btn btn-light">
                 <i class="bi bi-arrow-left"></i> Volver al Panel
             </a>
@@ -43,7 +43,7 @@
                     </div>
                 </div>
                 {% empty %}
-                <p class="text-muted">No hay tutores registrados.</p>
+                <p class="text-muted">No hay gestores de ciencia registrados.</p>
                 {% endfor %}
             </div>
         </div>

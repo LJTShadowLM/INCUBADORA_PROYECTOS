@@ -6,7 +6,7 @@
         <div class="col-md-8">
             <div class="card shadow">
                 <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">Asignar Tutor a Proyecto</h3>
+                    <h3 class="mb-0">Asignar Gestor de Ciencias a Proyecto</h3>
                 </div>
                 <div class="card-body">
                     <h4>Proyecto: {{ proyecto.nombre_proyecto }}</h4>
@@ -16,9 +16,9 @@
                         {% csrf_token %}
                         
                         <div class="mb-3">
-                            <label class="form-label">Seleccionar tutor:</label>
+                            <label class="form-label">Seleccionar gestor de ciencias:</label>
                             <select name="tutor_id" class="form-select" required>
-                                <option value="">-- Seleccione un tutor --</option>
+                                <option value="">-- Seleccione un gestor de ciencias --</option>
                                 {% for tutor in tutores %}
                                 <option value="{{ tutor.id }}" 
                                     {% if tutor.proyectos_actuales >= tutor.max_proyectos %}disabled{% endif %}>
@@ -28,11 +28,11 @@
                                 </option>
                                 {% endfor %}
                             </select>
-                            <div class="form-text">Solo se pueden seleccionar tutores con disponibilidad</div>
+                            <div class="form-text">Solo se pueden seleccionar gestor de ciencias con disponibilidad</div>
                         </div>
                         
                         <button type="submit" class="btn btn-success w-100 py-2">
-                            <i class="bi bi-person-check"></i> Asignar Tutor
+                            <i class="bi bi-person-check"></i> Asignar Gestor de Ciencias
                         </button>
                         <a href="{% url 'panel_admin' %}" class="btn btn-secondary w-100 mt-2">Cancelar</a>
                     </form>

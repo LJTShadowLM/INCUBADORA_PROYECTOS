@@ -2,8 +2,8 @@
 {% load static %}
 
 {% block content %}
-<!-- Hero Section -->
-<section class="hero-section" style="background: linear-gradient(135deg, #0066cc 0%, #004080 100%); color: white; padding: 5rem 0; text-align: center;">
+<!-- Hero Section con imagen de fondo y overlay -->
+<section class="hero-section" style="background: linear-gradient(rgba(0, 40, 80, 0.75), rgba(0, 102, 204, 0.75)), url('{% static 'img/tech-bg.png' %}') center/cover no-repeat; color: white; padding: 5rem 0; text-align: center;">
     <div class="container">
         <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Impulsando Innovación Tecnológica en Santiago de Cuba</h1>
         <p class="lead" style="font-size: 1.25rem; max-width: 700px; margin: 0 auto 2rem;">
@@ -22,92 +22,176 @@
                     Regístrate como emprendedor
                 </a>
             {% endif %}
-            <!-- Nuevo botón para el forum evento -->
             <a href="{% url 'forum_evento' %}" class="btn btn-outline-light btn-lg" style="font-weight: bold; padding: 0.75rem 2rem;">
                 Forum Evento de Ciencias Técnicas e Innovación
             </a>
             <a href="{% url 'ventanilla_unica' %}" class="btn btn-lg fw-bold" 
-   style="background:#00b4d8; color:white; padding: 0.75rem 2rem;">
-    <i class="bi bi-building me-2"></i>Ventanilla Única
-</a>
+               style="background:#00b4d8; color:white; padding: 0.75rem 2rem;">
+                <i class="bi bi-building me-2"></i>Ventanilla Única
+            </a>
         </div>
     </div>
 </section>
 
-<!-- Resto del contenido permanece igual -->
-<section class="container my-5">
-    <h2 class="text-center mb-5">Fases de Nuestra Incubadora</h2>
-    <div class="row g-4">
-        <!-- Etapa 1 -->
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Pre-Seed (Idea)</h5>
+<!-- Sección de Fases con imagen de fondo FP1.png y overlay oscuro -->
+<section class="fases-section" style="background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('{% static 'img/FP1.png' %}') center/cover no-repeat; padding: 4rem 0; position: relative; color: white;">
+    <div class="container">
+        <h2 class="text-center mb-5 fw-bold" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">Fases de Nuestra Incubadora</h2>
+        
+        <!-- Carrusel de Bootstrap -->
+        <div id="carouselFases" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                <!-- Slide 1 (Etapas 1-3) -->
+                <div class="carousel-item active">
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="card h-100 border-0 shadow-lg bg-dark bg-opacity-75 text-white" style="border-radius: 15px; backdrop-filter: blur(4px); transition: transform 0.3s;">
+                                <div class="card-header border-0" style="background: #0066cc; border-radius: 15px 15px 0 0;">
+                                    <h5 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Pre-Seed (Idea)</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>Desarrollo del Producto Mínimo Viable (MVP) que convierte el concepto en algo tangible.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card h-100 border-0 shadow-lg bg-dark bg-opacity-75 text-white" style="border-radius: 15px; backdrop-filter: blur(4px); transition: transform 0.3s;">
+                                <div class="card-header border-0" style="background: #0066cc; border-radius: 15px 15px 0 0;">
+                                    <h5 class="mb-0"><i class="bi bi-tree me-2"></i>Seed (Semilla)</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>Validación del MVP con clientes reales y preparación del pitch deck para inversionistas.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card h-100 border-0 shadow-lg bg-dark bg-opacity-75 text-white" style="border-radius: 15px; backdrop-filter: blur(4px); transition: transform 0.3s;">
+                                <div class="card-header border-0" style="background: #0066cc; border-radius: 15px 15px 0 0;">
+                                    <h5 class="mb-0"><i class="bi bi-rocket-takeoff me-2"></i>Early Stage</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>Mejora del producto con retroalimentación y construcción de relaciones comerciales estratégicas.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <p>Desarrollo del Producto Mínimo Viable (MVP) que convierte el concepto en algo tangible.</p>
+                <!-- Slide 2 (Etapas 4-6) -->
+                <div class="carousel-item">
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="card h-100 border-0 shadow-lg bg-dark bg-opacity-75 text-white" style="border-radius: 15px; backdrop-filter: blur(4px); transition: transform 0.3s;">
+                                <div class="card-header border-0" style="background: #0066cc; border-radius: 15px 15px 0 0;">
+                                    <h5 class="mb-0"><i class="bi bi-graph-up-arrow me-2"></i>Growth Stage</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>Expansión rápida con contrataciones estratégicas y manejo de flujo de caja positivo.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card h-100 border-0 shadow-lg bg-dark bg-opacity-75 text-white" style="border-radius: 15px; backdrop-filter: blur(4px); transition: transform 0.3s;">
+                                <div class="card-header border-0" style="background: #0066cc; border-radius: 15px 15px 0 0;">
+                                    <h5 class="mb-0"><i class="bi bi-globe2 me-2"></i>Expansión</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>Ampliación a nuevos mercados geográficos o segmentos con apoyo de grandes empresas.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card h-100 border-0 shadow-lg bg-dark bg-opacity-75 text-white" style="border-radius: 15px; backdrop-filter: blur(4px); transition: transform 0.3s;">
+                                <div class="card-header border-0" style="background: #0066cc; border-radius: 15px 15px 0 0;">
+                                    <h5 class="mb-0"><i class="bi bi-flag me-2"></i>Exit (Salida)</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>Venta de la startup mediante acciones, OPI o absorción por compañías más grandes.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <!-- Etapa 2 -->
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Seed (Semilla)</h5>
-                </div>
-                <div class="card-body">
-                    <p>Validación del MVP con clientes reales y preparación del pitch deck para inversionistas.</p>
-                </div>
-            </div>
-        </div>
-        <!-- Etapa 3 -->
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Early Stage</h5>
-                </div>
-                <div class="card-body">
-                    <p>Mejora del producto con retroalimentación y construcción de relaciones comerciales estratégicas.</p>
-                </div>
-            </div>
-        </div>
-        <!-- Etapa 4 -->
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Growth Stage</h5>
-                </div>
-                <div class="card-body">
-                    <p>Expansión rápida con contrataciones estratégicas y manejo de flujo de caja positivo.</p>
-                </div>
-            </div>
-        </div>
-        <!-- Etapa 5 -->
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Expansión</h5>
-                </div>
-                <div class="card-body">
-                    <p>Ampliación a nuevos mercados geográficos o segmentos con apoyo de grandes empresas.</p>
-                </div>
-            </div>
-        </div>
-        <!-- Etapa 6 -->
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Exit (Salida)</h5>
-                </div>
-                <div class="card-body">
-                    <p>Venta de la startup mediante acciones, OPI o absorción por compañías más grandes.</p>
-                </div>
+            <!-- Controles del carrusel -->
+            <button class="carousel-control-prev" type="button" data-bs-target="#carouselFases" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true" style="background-color: #0066cc; border-radius: 50%; padding: 20px;"></span>
+                <span class="visually-hidden">Anterior</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#carouselFases" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true" style="background-color: #0066cc; border-radius: 50%; padding: 20px;"></span>
+                <span class="visually-hidden">Siguiente</span>
+            </button>
+            <!-- Indicadores -->
+            <div class="carousel-indicators" style="bottom: -40px;">
+                <button type="button" data-bs-target="#carouselFases" data-bs-slide-to="0" class="active" style="background-color: white;"></button>
+                <button type="button" data-bs-target="#carouselFases" data-bs-slide-to="1" style="background-color: white;"></button>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Formulario de Contacto -->
+<!-- NUEVA SECCIÓN: PROYECTOS INNOVADORES DESTACADOS (con fondo FP2.png) -->
+<section class="proyectos-destacados-section" style="background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), url('{% static 'img/FP.png' %}') center/cover fixed; padding: 4rem 0; color: white;">
+    <div class="container">
+        <h2 class="text-center mb-3 fw-bold" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">Proyectos Innovadores Destacados</h2>
+        <p class="text-center mb-5" style="opacity: 0.9;">Descubre algunas de las iniciativas que están transformando el futuro</p>
+        
+        <div class="row g-4">
+            {% for proyecto in proyectos_destacados %}
+            <div class="col-md-6 col-lg-3">
+                <div class="card h-100 border-0 shadow-lg bg-dark bg-opacity-75 text-white project-card" style="border-radius: 20px; backdrop-filter: blur(4px); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+                    <div class="card-header border-0 d-flex justify-content-between align-items-center" style="background: rgba(0,102,204,0.9); border-radius: 20px 20px 0 0;">
+                        <h5 class="mb-0 fw-bold">{{ proyecto.nombre_proyecto|truncatechars:25 }}</h5>
+                        <span class="badge 
+                            {% if proyecto.estado == 'asignado' %}bg-warning text-dark
+                            {% elif proyecto.estado == 'finalizado' %}bg-success
+                            {% elif proyecto.estado == 'revision' %}bg-info text-dark
+                            {% else %}bg-secondary{% endif %}">
+                            {{ proyecto.get_estado_display }}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-2">
+                            <i class="bi bi-tag me-2"></i>{{ proyecto.get_sector_display }}
+                        </p>
+                        <p class="card-text" style="font-size: 0.95rem;">{{ proyecto.descripcion|truncatechars:100 }}</p>
+                        <hr style="background-color: rgba(255,255,255,0.3);">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-person-circle me-2 fs-5"></i>
+                            <span>{{ proyecto.nombre_completo|truncatechars:20 }}</span>
+                        </div>
+                        {% if proyecto.tutor %}
+                        <div class="mt-2 d-flex align-items-center">
+                            <i class="bi bi-person-check me-2"></i>
+                            <small>Gestor: {{ proyecto.tutor.usuario.get_full_name|truncatechars:18 }}</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer border-0 d-flex justify-content-between align-items-center" style="background: rgba(0,0,0,0.2); border-radius: 0 0 20px 20px;">
+                        <small><i class="bi bi-calendar3 me-1"></i>{{ proyecto.fecha_registro|date:"M Y" }}</small>
+                        <span class="badge bg-light text-dark">
+                            <i class="bi bi-bar-chart-steps me-1"></i>{{ proyecto.progreso }}%
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-folder-x display-1"></i>
+                <p class="lead mt-3">Aún no hay proyectos destacados.</p>
+                <a href="{% url 'registro' %}" class="btn btn-primary mt-2">Registra el primer proyecto</a>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Mensaje sutil de que los proyectos cambian aleatoriamente -->
+        <div class="text-center mt-5">
+            <small class="text-white-50"><i class="bi bi-shuffle me-1"></i> Proyectos seleccionados aleatoriamente — ¡Cada visita muestra diferentes innovaciones!</small>
+        </div>
+    </div>
+</section>
+
+<!-- Sección Accede a tu panel -->
 <section class="container my-5">
     <div class="row justify-content-center">
         <div class="col-md-8 text-center">
@@ -124,7 +208,8 @@
         </div>
     </div>
 </section>
-<!-- Footer -->
+
+<!-- Footer sin cambios -->
 <footer style="background: #002244; color: #adb5bd; padding: 3rem 0 1.5rem;">
     <div class="container">
         <div class="row g-4 mb-4">
@@ -156,4 +241,66 @@
         </p>
     </div>
 </footer>
+
+<!-- Estilos adicionales y animaciones JavaScript -->
+<style>
+    /* Efecto hover para tarjetas de fases y proyectos */
+    .fases-section .card:hover,
+    .proyectos-destacados-section .project-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 20px 30px rgba(0,0,0,0.4) !important;
+        transition: all 0.3s ease;
+    }
+    
+    /* Ajuste para que el texto sea siempre legible */
+    .bg-dark.bg-opacity-75 {
+        background-color: rgba(33, 37, 41, 0.85) !important;
+    }
+    
+    /* Mejora visual de indicadores del carrusel */
+    .carousel-indicators button {
+        width: 12px !important;
+        height: 12px !important;
+        border-radius: 50% !important;
+        margin: 0 6px !important;
+        background-color: white !important;
+        opacity: 0.7;
+    }
+    .carousel-indicators .active {
+        opacity: 1;
+        background-color: #0066cc !important;
+    }
+    
+    /* Efecto parallax sutil para fondo fijo */
+    .proyectos-destacados-section {
+        background-attachment: fixed;
+    }
+    
+    /* Responsive: en móviles, tarjetas a una columna */
+    @media (max-width: 768px) {
+        .carousel-item .col-md-4 {
+            margin-bottom: 20px;
+        }
+        .proyectos-destacados-section .col-lg-3 {
+            margin-bottom: 20px;
+        }
+    }
+</style>
+
+<!-- JavaScript para animaciones adicionales (opcional) -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Pequeña animación de entrada para las tarjetas de proyectos
+        const projectCards = document.querySelectorAll('.project-card');
+        projectCards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    });
+</script>
 {% endblock %}

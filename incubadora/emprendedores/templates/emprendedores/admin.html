@@ -16,14 +16,14 @@
                         <i class="bi bi-envelope"></i> Configurar Correo
                     </a>
                     <a href="{% url 'registrar_tutor' %}" class="btn btn-light me-2">
-                        <i class="bi bi-person-plus"></i> Registrar Tutor
+                        <i class="bi bi-person-plus"></i> Registrar Gestor de Ciencias
                     </a>
-                    <!-- NUEVOS BOTONES PARA LISTAS (SOLO SE AÑADEN ESTOS TRES) -->
+                    <!--  BOTONES PARA LISTAS -->
                     <a href="{% url 'lista_proyectos' %}" class="btn btn-light me-2">
                         <i class="bi bi-folder"></i> Ver Proyectos
                     </a>
                     <a href="{% url 'lista_tutores' %}" class="btn btn-light me-2">
-                        <i class="bi bi-people"></i> Ver Tutores
+                        <i class="bi bi-people"></i> Ver Gestor de Ciencias
                     </a>
                     <a href="{% url 'lista_emprendedores' %}" class="btn btn-light me-2">
                         <i class="bi bi-person"></i> Ver Emprendedores
@@ -32,12 +32,11 @@
             </div>
         </div>        
         <div class="card-body">
-            <!-- Se eliminó la barra de búsqueda general y todos los formularios de filtro dentro de cada sección -->
-
+           
             <div class="row">
                 <!-- Sección de Tutores -->
                 <div class="col-md-6">
-                    <h4>Tutores</h4>
+                    <h4>Gestor de Ciencias</h4>
                     <!-- ELIMINADO: Formulario de filtro por especialidad -->
                     <div class="list-group mb-4">
                         {% for tutor in tutores %}
@@ -121,7 +120,7 @@
             <!-- Sección de Proyectos -->
             <div class="mt-4">
                 <h4>Proyectos</h4>
-                <!-- ELIMINADO: Formulario de filtro por estado -->
+                
                 <div class="list-group">
                     {% for proyecto in proyectos %}
                     <div class="list-group-item">
@@ -139,7 +138,7 @@
                         <p class="mb-1">{{ proyecto.descripcion|truncatechars:100 }}</p>
                         <small>Solicitado por: {{ proyecto.nombre_completo }}</small>
                         <div class="mt-2">
-                            <strong>Tutor asignado:</strong> 
+                            <strong>Gestor de Ciencias asignado:</strong> 
                             {% if proyecto.tutor %}
                                 {{ proyecto.tutor.usuario.get_full_name }} ({{ proyecto.tutor.proyectos_actuales }}/{{ proyecto.tutor.max_proyectos }})
                             {% else %}
@@ -149,7 +148,7 @@
                         <!-- BOTÓN DE ASIGNAR TUTOR A PROYECTO -->
                         <div class="mt-2">
                             <a href="{% url 'asignar_tutor' proyecto.id %}" class="btn btn-sm btn-success">
-                                <i class="bi bi-person-plus"></i> Asignar Tutor
+                                <i class="bi bi-person-plus"></i> Asignar Gestor de Ciencias
                             </a>
                         </div>
                     </div>
@@ -176,7 +175,7 @@
                         <div>
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="tipo_destinatario" id="tipo_tutor" value="tutor" checked>
-                                <label class="form-check-label" for="tipo_tutor">Tutor</label>
+                                <label class="form-check-label" for="tipo_tutor">Gestor de Ciencias</label>
                             </div>
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="tipo_destinatario" id="tipo_emprendedor" value="emprendedor">
@@ -188,7 +187,7 @@
                         <label class="form-label">Seleccionar destinatario:</label>
                         <select class="form-select" id="destinatario_select" name="destinatario_id" required>
                             <option value="">-- Seleccione un destinatario --</option>
-                            <option value="" disabled>--- Tutores ---</option>
+                            <option value="" disabled>--- Gestor de Ciencias ---</option>
                             {% for tutor in tutores %}
                             <option value="{{ tutor.usuario.id }}" data-tipo="tutor">{{ tutor.usuario.get_full_name }}</option>
                             {% endfor %}

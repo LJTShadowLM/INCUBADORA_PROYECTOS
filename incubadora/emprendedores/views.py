@@ -42,11 +42,14 @@ def inicio(request):
     proyectos_finalizados = Proyecto.objects.filter(estado='finalizado').count()
     total_emprendedores = EmprendedorProfile.objects.count()
 
+    # Proyectos destacados para mostrar en la página principal (de manera aleatoria, a la vez solose muestran 4  )
+    proyectos_destacados = Proyecto.objects.filter(estado__in=['asignado', 'finalizado', 'revision']).order_by('?')[:4]
     return render(request, 'emprendedores/inicio.html', {
         'total_proyectos': total_proyectos,
         'proyectos_activos': proyectos_activos,
         'proyectos_finalizados': proyectos_finalizados,
         'total_emprendedores': total_emprendedores,
+        'proyectos_destacados': proyectos_destacados,
     })
 
 # Vista de registro de proyecto

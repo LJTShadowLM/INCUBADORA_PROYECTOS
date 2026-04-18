@@ -1,7 +1,10 @@
+{% load static %}
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
     <div class="container">
         <a class="navbar-brand" href="{% url 'inicio' %}">
-            <i class="bi bi-lightbulb"></i> Incubadora Desoft
+            <!-- CAMBIO: Logo en lugar del ícono -->
+            <img src="{% static 'img/logo-desoft.png' %}" alt="Desoft" height="80" class="d-inline-block align-top">
+            Incubadora Desoft
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
