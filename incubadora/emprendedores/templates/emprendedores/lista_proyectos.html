@@ -94,17 +94,17 @@
                     </small>
                     <div class="mt-2">
                         <strong>Gestor de Ciencias asignado:</strong>
-                        {% if proyecto.tutor %}
-                            {{ proyecto.tutor.usuario.get_full_name }} ({{ proyecto.tutor.proyectos_actuales }}/{{ proyecto.tutor.max_proyectos }})
+                        {% if proyecto.gestor %}
+                            {{ proyecto.gestor.usuario.get_full_name }} ({{ proyecto.gestor.proyectos_actuales }}/{{ proyecto.gestor.max_proyectos }})
                         {% else %}
                             Sin asignar
                         {% endif %}
                     </div>
                     <div class="mt-2">
-                    <a href="{% url 'detalle_proyecto' proyecto.id %}" class="btn btn-sm btn-primary">
-                  <i class="bi bi-eye"></i> Ver detalles
-                         </a>
-                     </div>
+                        <a href="{% url 'detalle_proyecto' proyecto.id %}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-eye"></i> Ver detalles
+                        </a>
+                    </div>
                 </div>
                 {% empty %}
                 <p class="text-muted">No hay proyectos que coincidan con los filtros seleccionados.</p>

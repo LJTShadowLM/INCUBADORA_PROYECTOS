@@ -1,0 +1,20 @@
+{% extends "emprendedores/base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white"><h4>Proponer Nuevo Horario</h4></div>
+                <div class="card-body">
+                    <p>Proyecto: {{ sesion.proyecto.nombre_proyecto }}</p>
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-primary">Enviar Propuesta</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

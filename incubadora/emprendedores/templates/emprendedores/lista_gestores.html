@@ -4,46 +4,46 @@
 <div class="container mt-5">
     <div class="card shadow">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <h3 class="mb-0">Gestores de Ciencia  Registrados</h3>
+            <h3 class="mb-0">Gestores de Ciencias Registrados</h3>
             <a href="{% url 'panel_admin' %}" class="btn btn-light">
                 <i class="bi bi-arrow-left"></i> Volver al Panel
             </a>
         </div>
         <div class="card-body">
             <div class="list-group mb-4">
-                {% for tutor in tutores %}
+                {% for gestor in gestores %}
                 <div class="list-group-item">
                     <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1">{{ tutor.usuario.get_full_name }}</h5>
+                        <h5 class="mb-1">{{ gestor.usuario.get_full_name }}</h5>
                         <small class="badge bg-info">
-                            Proyectos: {{ tutor.proyectos_actuales }}/{{ tutor.max_proyectos }}
+                            Proyectos: {{ gestor.proyectos_actuales }}/{{ gestor.max_proyectos }}
                         </small>
                     </div>
                     <p class="mb-1">
-                        <strong>Email:</strong> {{ tutor.usuario.email }}<br>
-                        <strong>Especialidades:</strong> {{ tutor.especialidades|truncatechars:100 }}
+                        <strong>Email:</strong> {{ gestor.usuario.email }}<br>
+                        <strong>Especialidades:</strong> {{ gestor.especialidades|truncatechars:100 }}
                     </p>
                     <div class="mt-2">
                         <button type="button" class="btn btn-sm btn-outline-primary me-1" 
                                 data-bs-toggle="modal" data-bs-target="#mensajeModal"
-                                data-destinatario-id="{{ tutor.usuario.id }}"
-                                data-destinatario-nombre="{{ tutor.usuario.get_full_name }}"
-                                data-tipo-destinatario="tutor">
+                                data-destinatario-id="{{ gestor.usuario.id }}"
+                                data-destinatario-nombre="{{ gestor.usuario.get_full_name }}"
+                                data-tipo-destinatario="gestor">
                             <i class="bi bi-envelope"></i> Enviar Mensaje
                         </button>
-                        <a href="{% url 'editar_tutor' tutor.id %}" class="btn btn-sm btn-warning me-1">
+                        <a href="{% url 'editar_gestor' gestor.id %}" class="btn btn-sm btn-warning me-1">
                             <i class="bi bi-pencil"></i> Editar
                         </a>
-                        <a href="{% url 'eliminar_tutor' tutor.id %}" class="btn btn-sm btn-danger me-1">
+                        <a href="{% url 'eliminar_gestor' gestor.id %}" class="btn btn-sm btn-danger me-1">
                             <i class="bi bi-trash"></i> Eliminar
                         </a>
-                        <a href="{% url 'ver_tutor' tutor.id %}" class="btn btn-sm btn-info">
+                        <a href="{% url 'ver_gestor' gestor.id %}" class="btn btn-sm btn-info">
                             <i class="bi bi-info-circle"></i> Ver Info
                         </a>
                     </div>
                 </div>
                 {% empty %}
-                <p class="text-muted">No hay gestores de ciencia registrados.</p>
+                <p class="text-muted">No hay gestores de ciencias registrados.</p>
                 {% endfor %}
             </div>
         </div>
@@ -60,7 +60,7 @@
             </div>
             <form method="post" action="{% url 'enviar_mensaje' %}">
                 {% csrf_token %}
-                <input type="hidden" name="tipo_destinatario" id="tipo_destinatario_hidden" value="tutor">
+                <input type="hidden" name="tipo_destinatario" id="tipo_destinatario_hidden" value="gestor">
                 <input type="hidden" name="destinatario_id" id="destinatario_id_hidden" value="">
                 <div class="modal-body">
                     <div class="mb-3">

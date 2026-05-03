@@ -1,0 +1,73 @@
+{% extends "emprendedores/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Información del Gestor de Ciencias: {{ gestor.usuario.get_full_name }}</h3>
+                </div>
+                <div class="card-body">
+                    <h4 class="mb-3">Información Personal</h4>
+                    <div class="mb-3">
+                        <strong>Nombre completo:</strong> {{ gestor.usuario.get_full_name }}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Usuario:</strong> {{ gestor.usuario.username }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Teléfono:</strong> {{ gestor.telefono|default:"No proporcionado" }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Cédula:</strong> {{ gestor.cedula }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Grado académico:</strong> {{ gestor.get_grado_academico_display }}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Institución:</strong> {{ gestor.institucion }}
+                    </div>
+                    
+                    <h4 class="mb-3 mt-4">Información Profesional</h4>
+                    <div class="mb-3">
+                        <strong>Especialidades:</strong> {{ gestor.especialidades }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Experiencia:</strong> {{ gestor.experiencia }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Áreas que puede tutorizar:</strong> {{ gestor.areas_tutorizar }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Máximo de proyectos:</strong> {{ gestor.max_proyectos }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Proyectos actualmente asignados:</strong> {{ gestor.proyectos_actuales }}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'panel_admin' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Volver al panel
+                        </a>
+                        <a href="{% url 'editar_gestor' gestor.id %}" class="btn btn-primary">
+                            <i class="bi bi-pencil"></i> Editar Gestor de Ciencias
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

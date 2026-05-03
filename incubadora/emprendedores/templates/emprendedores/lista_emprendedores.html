@@ -22,9 +22,9 @@
                     <p class="mb-1">
                         <strong>Usuario:</strong> {{ emprendedor.username }}<br>
                         <strong>Email:</strong> {{ emprendedor.email }}<br>
-                        <strong>Tutor asignado:</strong> 
-                        {% if emprendedor.emprendedor_profile.tutor %}
-                            {{ emprendedor.emprendedor_profile.tutor.usuario.get_full_name }}
+                        <strong>Gestor asignado:</strong> 
+                        {% if emprendedor.emprendedor_profile.gestor %}
+                            {{ emprendedor.emprendedor_profile.gestor.usuario.get_full_name }}
                         {% else %}
                             Sin asignar
                         {% endif %}

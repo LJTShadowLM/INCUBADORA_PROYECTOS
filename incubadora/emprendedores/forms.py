@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from .models import SesionMentoria, ArchivoSesion, PropuestaHorario, Proyecto, Tutor, Convocatoria, Categoria, DocumentoPlantilla, TrabajoInnovacion, ResumenInnovacion, ParticipanteForum, ConfiguracionCorreo, BancoProblema
+from .models import SesionMentoria, ArchivoSesion, PropuestaHorario, Proyecto, GestorCiencias, Convocatoria, Categoria, DocumentoPlantilla, TrabajoInnovacion, ResumenInnovacion, ParticipanteForum, ConfiguracionCorreo, BancoProblema
 from django.utils import timezone
 
 
@@ -124,7 +124,7 @@ class PropuestaHorarioForm(forms.ModelForm):
         fecha3 = cleaned_data.get('fecha_propuesta_3')
         
         if fecha1 and fecha1 < timezone.now():
-            self.add_error('fecha_propuesta_1', 'La fecha и hora no puede ser en el pasado.')
+            self.add_error('fecha_propuesta_1', 'La fecha y hora no puede ser en el pasado.')
         
         fechas = [f for f in [fecha1, fecha2, fecha3] if f]
         if len(fechas) != len(set(fechas)):
@@ -161,10 +161,10 @@ class MinutaSesionForm(forms.Form):
         widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
         label="Minuta de la sesión"
     )
-    tutor_presente = forms.BooleanField(
+    gestor_presente = forms.BooleanField(
         required=False, initial=True,
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-        label="Tutor presente"
+        label="Gestor de Ciencias presente"
     )
     emprendedor_presente = forms.BooleanField(
         required=False, initial=True,
@@ -215,7 +215,7 @@ class RegistroUsuarioProyectoForm(forms.Form):
         return cleaned_data
 
 
-class TutorRegistrationForm(forms.Form):
+class GestorCienciasRegistrationForm(forms.Form):
     # Campos para el usuario
     username = forms.CharField(
         max_length=150, 
@@ -231,7 +231,7 @@ class TutorRegistrationForm(forms.Form):
         label="Confirmar contraseña"
     )
     
-    # Campos para el tutor
+    # Campos para el gestor
     nombre_completo = forms.CharField(
         max_length=100, 
         widget=forms.TextInput(attrs={'class': 'form-control'}),
@@ -250,7 +250,7 @@ class TutorRegistrationForm(forms.Form):
         label="Cédula de identidad"
     )
     grado_academico = forms.ChoiceField(
-        choices=Tutor.GRADOS_ACADEMICOS,
+        choices=GestorCiencias.GRADOS_ACADEMICOS,
         widget=forms.Select(attrs={'class': 'form-control'}),
         label="Grado académico"
     )
@@ -332,13 +332,13 @@ class TutorRegistrationForm(forms.Form):
             user.last_name = user_data['last_name']
             user.save()
             
-            tutor = self.instance
+            gestor = self.instance
         else:
             # Crear nuevo usuario
             user = User.objects.create_user(**user_data)
             
-            # Crear tutor
-            tutor = Tutor.objects.create(
+            # Crear gestor
+            gestor = GestorCiencias.objects.create(
                 usuario=user,
                 cedula=self.cleaned_data['cedula'],
                 grado_academico=self.cleaned_data['grado_academico'],
@@ -350,18 +350,18 @@ class TutorRegistrationForm(forms.Form):
                 telefono=self.cleaned_data['telefono'],
             )
         
-        # Actualizar los campos del tutor
-        tutor.telefono = self.cleaned_data['telefono']
-        tutor.cedula = self.cleaned_data['cedula']
-        tutor.grado_academico = self.cleaned_data['grado_academico']
-        tutor.institucion = self.cleaned_data['institucion']
-        tutor.especialidades = self.cleaned_data['especialidades']
-        tutor.experiencia = self.cleaned_data['experiencia']
-        tutor.areas_tutorizar = self.cleaned_data['areas_tutorizar']
-        tutor.max_proyectos = self.cleaned_data['max_proyectos']
-        tutor.save()
+        # Actualizar los campos del gestor
+        gestor.telefono = self.cleaned_data['telefono']
+        gestor.cedula = self.cleaned_data['cedula']
+        gestor.grado_academico = self.cleaned_data['grado_academico']
+        gestor.institucion = self.cleaned_data['institucion']
+        gestor.especialidades = self.cleaned_data['especialidades']
+        gestor.experiencia = self.cleaned_data['experiencia']
+        gestor.areas_tutorizar = self.cleaned_data['areas_tutorizar']
+        gestor.max_proyectos = self.cleaned_data['max_proyectos']
+        gestor.save()
         
-        return tutor
+        return gestor
 
 
 class ProyectoForm(forms.ModelForm):
@@ -389,7 +389,7 @@ class ProyectoForm(forms.ModelForm):
 
 class MensajeForm(forms.Form):
     TIPOS_DESTINATARIO = (
-        ('tutor', 'Tutor'),
+        ('tutor', 'Gestor de Ciencias'),
         ('emprendedor', 'Emprendedor'),
         ('administrador', 'Administrador'),
     )
@@ -410,6 +410,7 @@ class MensajeForm(forms.Form):
         label="Mensaje"
     )
 
+# Nota: hay una clase ProyectoForm duplicada, la mantengo igual
 class ProyectoForm(forms.ModelForm):
     class Meta:
         model = Proyecto
@@ -439,8 +440,7 @@ class ProyectoForm(forms.ModelForm):
         if self.user:
             # Prellenar con datos del usuario si está disponible
             self.fields['nombre_completo'].initial = self.user.get_full_name()
-            self.fields['email'].initial = self.user.email                                                                                                                 
-
+            self.fields['email'].initial = self.user.email
 
 
 class ConvocatoriaForm(forms.ModelForm):
@@ -632,4 +632,4 @@ class BancoProblemaForm(forms.ModelForm):
         }
         labels = {
             'ponencia_consultar': 'Ponencia a consultar',
-        }        
+        }

@@ -160,10 +160,10 @@
                             <i class="bi bi-person-circle me-2 fs-5"></i>
                             <span>{{ proyecto.nombre_completo|truncatechars:20 }}</span>
                         </div>
-                        {% if proyecto.tutor %}
+                        {% if proyecto.gestor %}
                         <div class="mt-2 d-flex align-items-center">
                             <i class="bi bi-person-check me-2"></i>
-                            <small>Gestor: {{ proyecto.tutor.usuario.get_full_name|truncatechars:18 }}</small>
+                            <small>Gestor: {{ proyecto.gestor.usuario.get_full_name|truncatechars:18 }}</small>
                         </div>
                         {% endif %}
                     </div>

@@ -8,7 +8,7 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.urls import reverse
-from .forms import SesionMentoriaForm, ArchivoSesionForm, PropuestaHorarioForm, ResponderSesionForm, MinutaSesionForm, RegistroUsuarioProyectoForm, TutorRegistrationForm, MensajeForm, ProyectoForm, ConvocatoriaForm, CategoriaForm, DocumentoPlantillaForm, BancoProblemaForm
+from .forms import SesionMentoriaForm, ArchivoSesionForm, PropuestaHorarioForm, ResponderSesionForm, MinutaSesionForm, RegistroUsuarioProyectoForm, GestorCienciasRegistrationForm, MensajeForm, ProyectoForm, ConvocatoriaForm, CategoriaForm, DocumentoPlantillaForm, BancoProblemaForm
 import json
 from datetime import timedelta
 from django.contrib.auth import logout, login
@@ -17,7 +17,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
-from .models import Mensaje, SesionMentoria, ArchivoSesion, EventoSesion, PropuestaHorario, Proyecto, Tutor, Tarea, EmprendedorProfile, Convocatoria, Categoria, DocumentoPlantilla, ParticipanteForum, ConfiguracionCorreo, BancoProblema, SolicitudVentanilla
+from .models import Mensaje, SesionMentoria, ArchivoSesion, EventoSesion, PropuestaHorario, Proyecto, GestorCiencias, Tarea, EmprendedorProfile, Convocatoria, Categoria, DocumentoPlantilla, ParticipanteForum, ConfiguracionCorreo, BancoProblema, SolicitudVentanilla
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -130,8 +130,8 @@ def login_view(request):
             
             if user.is_superuser:
                 return redirect('panel_admin')
-            elif hasattr(user, 'tutor'):
-                return redirect('panel_tutor')
+            elif hasattr(user, 'gestorciencias'):  # Atributo inverso de GestorCiencias
+                return redirect('panel_gestor')
             else:
                 return redirect('panel_emprendedor')
         else:
@@ -149,40 +149,40 @@ def logout_view(request):
 def panel_usuario(request):
     if request.user.is_superuser:
         return redirect('panel_admin')
-    elif hasattr(request.user, 'tutor'):
-        return redirect('panel_tutor')
+    elif hasattr(request.user, 'gestorciencias'):
+        return redirect('panel_gestor')
     else:
         return redirect('panel_emprendedor')
 
 def panel_admin(request):
     # Obtener parámetros de búsqueda y filtros
     search_query = request.GET.get('search', '')
-    tutor_especialidad_filter = request.GET.get('tutor_especialidad', '')
-    emprendedor_tutor_filter = request.GET.get('emprendedor_tutor', '')
+    gestor_especialidad_filter = request.GET.get('gestor_especialidad', '')
+    emprendedor_gestor_filter = request.GET.get('emprendedor_gestor', '')
     proyecto_estado_filter = request.GET.get('proyecto_estado', '')
 
-    # Filtrar tutores
-    tutores = Tutor.objects.all()
+    # Filtrar gestores
+    gestores = GestorCiencias.objects.all()
     if search_query:
-        tutores = tutores.filter(
+        gestores = gestores.filter(
             Q(usuario__first_name__icontains=search_query) |
             Q(usuario__last_name__icontains=search_query) |
             Q(usuario__username__icontains=search_query)
         )
-    if tutor_especialidad_filter:
-        tutores = tutores.filter(especialidades__icontains=tutor_especialidad_filter)
+    if gestor_especialidad_filter:
+        gestores = gestores.filter(especialidades__icontains=gestor_especialidad_filter)
 
     # Filtrar emprendedores
-    tutor_user_ids = Tutor.objects.values_list('usuario_id', flat=True)
-    emprendedores = User.objects.filter(is_superuser=False).exclude(id__in=tutor_user_ids)
+    gestor_user_ids = GestorCiencias.objects.values_list('usuario_id', flat=True)
+    emprendedores = User.objects.filter(is_superuser=False).exclude(id__in=gestor_user_ids)
     if search_query:
         emprendedores = emprendedores.filter(
             Q(first_name__icontains=search_query) |
             Q(last_name__icontains=search_query) |
             Q(username__icontains=search_query)
         )
-    if emprendedor_tutor_filter:
-        emprendedores = emprendedores.filter(emprendedor_profile__tutor_id=emprendedor_tutor_filter)
+    if emprendedor_gestor_filter:
+        emprendedores = emprendedores.filter(emprendedor_profile__gestor_id=emprendedor_gestor_filter)
 
     # Filtrar proyectos
     proyectos = Proyecto.objects.all()
@@ -195,8 +195,8 @@ def panel_admin(request):
         if not hasattr(emprendedor, 'emprendedor_profile'):
             EmprendedorProfile.objects.create(user=emprendedor)
     
-    # Obtener lista de tutores para el filtro de emprendedores
-    todos_tutores = Tutor.objects.all()
+    # Obtener lista de gestores para el filtro de emprendedores
+    todos_gestores = GestorCiencias.objects.all()
 
     # Obtener choices de estados de proyecto
     estados_proyecto = Proyecto.ESTADOS
@@ -225,28 +225,28 @@ def panel_admin(request):
     solicitudes_nuevas = SolicitudVentanilla.objects.filter(estado='recibida').count()
 
     return render(request, 'emprendedores/admin.html', {
-        'tutores': tutores,
+        'gestores': gestores,
         'emprendedores': emprendedores,
         'proyectos': proyectos,
-        'todos_tutores': todos_tutores,
+        'todos_gestores': todos_gestores,
         'estados_proyecto': estados_proyecto,
         'search_query': search_query,
-        'tutor_especialidad_filter': tutor_especialidad_filter,
-        'emprendedor_tutor_filter': emprendedor_tutor_filter,
+        'gestor_especialidad_filter': gestor_especialidad_filter,
+        'emprendedor_gestor_filter': emprendedor_gestor_filter,
         'proyecto_estado_filter': proyecto_estado_filter,
         'solicitudes_ventanilla': solicitudes_ventanilla,
         'solicitudes_nuevas': solicitudes_nuevas,
     })
 
-# Vista de panel de tutor
+# Vista de panel de gestor
 @login_required
-def panel_tutor(request):
-    if not hasattr(request.user, 'tutor'):
+def panel_gestor(request):
+    if not hasattr(request.user, 'gestorciencias'):
         return redirect('panel_usuario')
     
-    tutor = get_object_or_404(Tutor, usuario=request.user)
-    # Obtener proyectos asignados a este tutor específico
-    proyectos = Proyecto.objects.filter(tutor=tutor)
+    gestor = get_object_or_404(GestorCiencias, usuario=request.user)
+    # Obtener proyectos asignados a este gestor específico
+    proyectos = Proyecto.objects.filter(gestor=gestor)
     hoy = timezone.now()
     
     sesiones_pendientes = SesionMentoria.objects.filter(
@@ -267,7 +267,7 @@ def panel_tutor(request):
         es_material_obligatorio=True
     ).exclude(archivos__isnull=False).distinct()
 
-    # Solicitudes de sesión enviadas por emprendedores (propuesta, no creada por el tutor)
+    # Solicitudes de sesión enviadas por emprendedores (propuesta, no creada por el gestor)
     solicitudes_sesion = SesionMentoria.objects.filter(
         proyecto__in=proyectos,
         estado='propuesta',
@@ -290,7 +290,7 @@ def panel_tutor(request):
         completada=True
     ).count()
 
-    # tareas_total: completadas + pendientes vigentes (misma base para que el conteo sea consistente)
+    # tareas_total: completadas + pendientes vigentes
     tareas_pendientes_count = Tarea.objects.filter(
         proyecto__in=proyectos,
         completada=False,
@@ -314,9 +314,9 @@ def panel_tutor(request):
             'url': reverse('detalle_sesion', args=[sesion.id])
         })
     
-    return render(request, 'emprendedores/tutor.html', {
+    return render(request, 'emprendedores/gestor.html', {
         'proyectos': proyectos,
-        'tutor': tutor,
+        'gestor': gestor,
         'sesiones_pendientes': sesiones_pendientes,
         'sesiones_proximas': sesiones_proximas,
         'sesiones_requieren_atencion': sesiones_requieren_atencion,
@@ -336,78 +336,78 @@ def panel_emprendedor(request):
     proyectos = Proyecto.objects.filter(usuario=request.user)
     return render(request, 'emprendedores/paneles/emprendedor.html', {'proyectos': proyectos})
 
-# Vista para asignar tutor a proyecto
-def asignar_tutor(request, proyecto_id):
+# Vista para asignar gestor a proyecto
+def asignar_gestor(request, proyecto_id):
     proyecto = get_object_or_404(Proyecto, id=proyecto_id)
     
     if request.method == 'POST':
-        tutor_id = request.POST.get('tutor_id')
-        if tutor_id:
-            tutor = get_object_or_404(Tutor, id=tutor_id)
+        gestor_id = request.POST.get('gestor_id')
+        if gestor_id:
+            gestor = get_object_or_404(GestorCiencias, id=gestor_id)
             
-            # Verificar si el tutor tiene disponibilidad
-            if tutor.proyectos_actuales >= tutor.max_proyectos:
-                messages.error(request, f"El Gestor de Ciencias {tutor.usuario.get_full_name()} ya tiene el máximo de proyectos asignados ({tutor.max_proyectos}).")
-                return redirect('asignar_tutor', proyecto_id=proyecto_id)
+            # Verificar si el gestor tiene disponibilidad
+            if gestor.proyectos_actuales >= gestor.max_proyectos:
+                messages.error(request, f"El Gestor de Ciencias {gestor.usuario.get_full_name()} ya tiene el máximo de proyectos asignados ({gestor.max_proyectos}).")
+                return redirect('asignar_gestor', proyecto_id=proyecto_id)
             
-            # Asignar el tutor al proyecto
-            proyecto.tutor = tutor
+            # Asignar el gestor al proyecto
+            proyecto.gestor = gestor
             proyecto.estado = 'asignado'
             proyecto.save()
             
-            messages.success(request, f"Gestor de Ciencias {tutor.usuario.get_full_name()} asignado exitosamente al proyecto {proyecto.nombre_proyecto}.")
+            messages.success(request, f"Gestor de Ciencias {gestor.usuario.get_full_name()} asignado exitosamente al proyecto {proyecto.nombre_proyecto}.")
             return redirect('panel_admin')
     
-    # Obtener tutores disponibles
-    tutores_disponibles = Tutor.objects.all()
+    # Obtener gestores disponibles
+    gestores_disponibles = GestorCiencias.objects.all()
     
-    return render(request, 'emprendedores/asignar_tutor.html', {
+    return render(request, 'emprendedores/asignar_gestor.html', {
         'proyecto': proyecto,
-        'tutores': tutores_disponibles
+        'gestores': gestores_disponibles
     })
 
-# Vista para registrar tutor
-def registrar_tutor(request):
+# Vista para registrar gestor
+def registrar_gestor(request):
     if request.method == 'POST':
-        form = TutorRegistrationForm(request.POST)
+        form = GestorCienciasRegistrationForm(request.POST)
         if form.is_valid():
             try:
-                tutor = form.save()
-                messages.success(request, f"Gestor de Ciencias {tutor.usuario.get_full_name()} registrado exitosamente.")
+                gestor = form.save()
+                messages.success(request, f"Gestor de Ciencias {gestor.usuario.get_full_name()} registrado exitosamente.")
                 return redirect('panel_admin')
             except Exception as e:
                 messages.error(request, f"Error al registrar Gestor de Ciencias: {str(e)}")
         else:
             messages.error(request, "Por favor, corrija los errores en el formulario.")
     else:
-        form = TutorRegistrationForm()
+        form = GestorCienciasRegistrationForm()
     
-    return render(request, 'emprendedores/registrar_tutor.html', {'form': form})
+    return render(request, 'emprendedores/registrar_gestor.html', {'form': form})
 
-# Vista para eliminar tutor
-def eliminar_tutor(request, tutor_id):
-    tutor = get_object_or_404(Tutor, id=tutor_id)
-    usuario = tutor.usuario
+# Vista para eliminar gestor
+def eliminar_gestor(request, gestor_id):
+    gestor = get_object_or_404(GestorCiencias, id=gestor_id)
+    usuario = gestor.usuario
     
     if request.method == 'POST':
-        tutor.delete()
+        gestor.delete()
         usuario.delete()
-        messages.success(request, f"Tutor {usuario.get_full_name()} eliminado exitosamente.")
+        messages.success(request, f"Gestor {usuario.get_full_name()} eliminado exitosamente.")
         return redirect('panel_admin')
     
-    return render(request, 'emprendedores/eliminar_tutor.html', {'tutor': tutor})
+    return render(request, 'emprendedores/eliminar_gestor.html', {'gestor': gestor})
 
-# Vista para editar tutor
-def editar_tutor(request, tutor_id):
-    tutor = get_object_or_404(Tutor, id=tutor_id)
+# Vista para editar gestor
+def editar_gestor(request, gestor_id):
+    gestor = get_object_or_404(GestorCiencias, id=gestor_id)
     
     if request.method == 'POST':
-        form = TutorRegistrationForm(request.POST, instance=tutor)
+        form = GestorCienciasRegistrationForm(request.POST, instance=gestor)
         
-        if form.isvalid():
+        if form.is_valid():
             try:
-                tutor_actualizado = form.save()
-                messages.success(request, f"Gestor de Ciencias {tutor_actualizado.usuario.get_full_name()} actualizado exitosamente.")
+                gestor_actualizado = form.save()
+                messages.success(request, f"Gestor de Ciencias {gestor_actualizado.usuario.get_full_name()} actualizado exitosamente.")
                 return redirect('panel_admin')
             except Exception as e:
                 messages.error(request, f"Error al actualizar Gestor de Ciencias: {str(e)}")
@@ -416,24 +416,24 @@ def editar_tutor(request, tutor_id):
                 for error in errors:
                     messages.error(request, f"{field}: {error}")
     else:
-        form = TutorRegistrationForm(instance=tutor, initial={
-            'username': tutor.usuario.username,
-            'nombre_completo': tutor.usuario.get_full_name(),
-            'telefono': tutor.telefono,
-            'cedula': tutor.cedula,
-            'grado_academico': tutor.grado_academico,
-            'institucion': tutor.institucion,
-            'especialidades': tutor.especialidades,
-            'experiencia': tutor.experiencia,
-            'areas_tutorizar': tutor.areas_tutorizar,
-            'max_proyectos': tutor.max_proyectos,
+        form = GestorCienciasRegistrationForm(instance=gestor, initial={
+            'username': gestor.usuario.username,
+            'nombre_completo': gestor.usuario.get_full_name(),
+            'telefono': gestor.telefono,
+            'cedula': gestor.cedula,
+            'grado_academico': gestor.grado_academico,
+            'institucion': gestor.institucion,
+            'especialidades': gestor.especialidades,
+            'experiencia': gestor.experiencia,
+            'areas_tutorizar': gestor.areas_tutorizar,
+            'max_proyectos': gestor.max_proyectos,
         })
     
-    return render(request, 'emprendedores/editar_tutor.html', {'form': form, 'tutor': tutor})
+    return render(request, 'emprendedores/editar_gestor.html', {'form': form, 'gestor': gestor})
 
-def ver_tutor(request, tutor_id):
-    tutor = get_object_or_404(Tutor, id=tutor_id)
-    return render(request, 'emprendedores/ver_tutor.html', {'tutor': tutor})
+def ver_gestor(request, gestor_id):
+    gestor = get_object_or_404(GestorCiencias, id=gestor_id)
+    return render(request, 'emprendedores/ver_gestor.html', {'gestor': gestor})
 
 # Vista para ver información del emprendedor
 def ver_emprendedor(request, emprendedor_id):
@@ -448,34 +448,34 @@ def ver_emprendedor(request, emprendedor_id):
         'proyectos': proyectos
     })
 
-# Vista para asignar tutor a emprendedor
-def asignar_tutor_emprendedor(request, emprendedor_id):
+# Vista para asignar gestor a emprendedor
+def asignar_gestor_emprendedor(request, emprendedor_id):
     emprendedor = get_object_or_404(User, id=emprendedor_id)
     profile, created = EmprendedorProfile.objects.get_or_create(user=emprendedor)
     
     if request.method == 'POST':
-        tutor_id = request.POST.get('tutor_id')
+        gestor_id = request.POST.get('gestor_id')
         
-        if tutor_id:
-            tutor = get_object_or_404(Tutor, id=tutor_id)
+        if gestor_id:
+            gestor = get_object_or_404(GestorCiencias, id=gestor_id)
             
-            if tutor.proyectos_actuales >= tutor.max_proyectos:
-                messages.error(request, f"El Gestor de Ciencias {tutor.usuario.get_full_name()} ya tiene el máximo de proyectos asignados ({tutor.max_proyectos}).")
-                return redirect('asignar_tutor_emprendedor', emprendedor_id=emprendedor_id)
+            if gestor.proyectos_actuales >= gestor.max_proyectos:
+                messages.error(request, f"El Gestor de Ciencias {gestor.usuario.get_full_name()} ya tiene el máximo de proyectos asignados ({gestor.max_proyectos}).")
+                return redirect('asignar_gestor_emprendedor', emprendedor_id=emprendedor_id)
             
-            profile.tutor = tutor
+            profile.gestor = gestor
             profile.save()
             
-            messages.success(request, f"El Gestor de Ciencias {tutor.usuario.get_full_name()} fue asignado al emprendedor {emprendedor.get_full_name()}.")
+            messages.success(request, f"El Gestor de Ciencias {gestor.usuario.get_full_name()} fue asignado al emprendedor {emprendedor.get_full_name()}.")
             return redirect('panel_admin')
     
-    todos_tutores = Tutor.objects.all()
-    tutores_disponibles = [tutor for tutor in todos_tutores if tutor.proyectos_actuales < tutor.max_proyectos]
+    todos_gestores = GestorCiencias.objects.all()
+    gestores_disponibles = [gestor for gestor in todos_gestores if gestor.proyectos_actuales < gestor.max_proyectos]
     
-    return render(request, 'emprendedores/asignar_tutor_emprendedor.html', {
+    return render(request, 'emprendedores/asignar_gestor_emprendedor.html', {
         'emprendedor': emprendedor,
-        'tutores': tutores_disponibles,
-        'tutor_actual': profile.tutor
+        'gestores': gestores_disponibles,
+        'gestor_actual': profile.gestor
     })
 
 @login_required
@@ -521,8 +521,8 @@ def enviar_mensaje(request):
     # Redirigir según el tipo de usuario
     if request.user.is_superuser:
         return redirect('panel_admin')
-    elif hasattr(request.user, 'tutor'):
-        return redirect('bandeja_tutor')
+    elif hasattr(request.user, 'gestorciencias'):
+        return redirect('bandeja_gestor')
     else:
         return redirect('panel_emprendedor')
 
@@ -530,18 +530,18 @@ def enviar_mensaje(request):
 def agendar_evento(request):
     return JsonResponse({'status': 'success'})
 
-# Vista para cambiar estado de proyecto (tutor)
+# Vista para cambiar estado de proyecto (gestor)
 @login_required
-def cambiar_estado_proyecto_tutor(request, proyecto_id):
-    if not hasattr(request.user, 'tutor'):
+def cambiar_estado_proyecto_gestor(request, proyecto_id):
+    if not hasattr(request.user, 'gestorciencias'):
         messages.error(request, "No tienes permisos para realizar esta acción.")
-        return redirect('panel_tutor')
+        return redirect('panel_gestor')
     
     proyecto = get_object_or_404(Proyecto, id=proyecto_id)
     
-    if proyecto.tutor != request.user.tutor:
+    if proyecto.gestor != request.user.gestorciencias:
         messages.error(request, "No tienes permisos para modificar este proyecto.")
-        return redirect('panel_tutor')
+        return redirect('panel_gestor')
     
     if request.method == 'POST':
         nuevo_estado = request.POST.get('nuevo_estado')
@@ -551,17 +551,15 @@ def cambiar_estado_proyecto_tutor(request, proyecto_id):
         if proyecto.estado == 'finalizado':
             from django.utils import timezone as tz
             if proyecto.fecha_registro:
-                # Usamos fecha_ultima_modificacion si existe, si no fecha_registro
                 fecha_finalizacion = getattr(proyecto, 'fecha_ultima_modificacion', proyecto.fecha_registro)
                 if (tz.now() - fecha_finalizacion).days >= 7:
                     messages.error(request, f'El proyecto "{proyecto.nombre_proyecto}" fue finalizado hace más de una semana y no puede cambiar de estado.')
-                    return redirect('panel_tutor')
+                    return redirect('panel_gestor')
 
         if nuevo_estado in estados_permitidos:
             estado_anterior = proyecto.estado
             proyecto.estado = nuevo_estado
 
-            # Calcular progreso automáticamente según el estado
             progreso_por_estado = {
                 'pendiente': 0,
                 'revision': 25,
@@ -571,7 +569,6 @@ def cambiar_estado_proyecto_tutor(request, proyecto_id):
             proyecto.progreso = progreso_por_estado.get(nuevo_estado, proyecto.progreso)
             proyecto.save()
             
-            # Mensajes por estado para el emprendedor
             mensajes_estado = {
                 'pendiente': f'Tu proyecto "{proyecto.nombre_proyecto}" ha sido marcado como Pendiente.',
                 'revision': f'Tu proyecto "{proyecto.nombre_proyecto}" ha pasado a revisión. Tu Gestor de Ciencias está evaluando el avance.',
@@ -579,7 +576,6 @@ def cambiar_estado_proyecto_tutor(request, proyecto_id):
                 'finalizado': f'¡Felicidades! Tu proyecto "{proyecto.nombre_proyecto}" ha sido marcado como Finalizado.',
             }
             
-            # Enviar mensaje interno al emprendedor si tiene usuario asignado
             if proyecto.usuario:
                 Mensaje.objects.create(
                     remitente=request.user,
@@ -589,7 +585,6 @@ def cambiar_estado_proyecto_tutor(request, proyecto_id):
                     contenido=mensajes_estado.get(nuevo_estado, f'El estado de tu proyecto ha cambiado a {proyecto.get_estado_display()}.'),
                 )
             
-            # Crear tarea automática según la transición de estado
             fecha_limite_auto = timezone.now() + timedelta(days=7)
             
             tareas_auto = {
@@ -626,31 +621,28 @@ def cambiar_estado_proyecto_tutor(request, proyecto_id):
         else:
             messages.error(request, "Estado no válido.")
     
-    return redirect('panel_tutor')
+    return redirect('panel_gestor')
 
 # Vista para rechazar proyecto
 @login_required
 def rechazar_proyecto(request, proyecto_id):
-    if not hasattr(request.user, 'tutor'):
+    if not hasattr(request.user, 'gestorciencias'):
         messages.error(request, "No tienes permisos para realizar esta acción.")
-        return redirect('panel_tutor')
+        return redirect('panel_gestor')
     
     proyecto = get_object_or_404(Proyecto, id=proyecto_id)
     
-    # Verificar que el proyecto está asignado a este tutor
-    if proyecto.tutor != request.user.tutor:
+    if proyecto.gestor != request.user.gestorciencias:
         messages.error(request, "No tienes permisos para rechazar este proyecto.")
-        return redirect('panel_tutor')
+        return redirect('panel_gestor')
     
     if request.method == 'POST':
         razon_rechazo = request.POST.get('razon_rechazo')
         if razon_rechazo and len(razon_rechazo) >= 10:
-            # Guardar la razón del rechazo en el proyecto
             proyecto.motivo_rechazo = razon_rechazo
             proyecto.estado = 'rechazado'
             proyecto.save()
             
-            # Enviar mensaje al administrador
             try:
                 admin_user = User.objects.filter(is_superuser=True).first()
                 if admin_user:
@@ -659,13 +651,12 @@ def rechazar_proyecto(request, proyecto_id):
                         destinatario=admin_user,
                         tipo_destinatario='administrador',
                         asunto=f"Proyecto Rechazado: {proyecto.nombre_proyecto}",
-                        contenido=f"El tutor {request.user.get_full_name()} ha rechazado el proyecto '{proyecto.nombre_proyecto}'.\n\nRazón del rechazo:\n{razon_rechazo}\n\nEmprendedor: {proyecto.nombre_completo}\nEmail: {proyecto.email}"
+                        contenido=f"El gestor {request.user.get_full_name()} ha rechazado el proyecto '{proyecto.nombre_proyecto}'.\n\nRazón del rechazo:\n{razon_rechazo}\n\nEmprendedor: {proyecto.nombre_completo}\nEmail: {proyecto.email}"
                     )
                     mensaje_admin.save()
             except Exception as e:
                 print(f"Error al enviar mensaje al administrador: {e}")
             
-            # Enviar mensaje al emprendedor
             if proyecto.usuario:
                 try:
                     mensaje_emprendedor = Mensaje(
@@ -680,12 +671,11 @@ def rechazar_proyecto(request, proyecto_id):
                     print(f"Error al enviar mensaje al emprendedor: {e}")
             
             messages.success(request, "Proyecto rechazado correctamente. Se han enviado las notificaciones.")
-            return redirect('panel_tutor')
+            return redirect('panel_gestor')
         else:
             messages.error(request, "Debe proporcionar una razón detallada de al menos 10 caracteres.")
             return render(request, 'emprendedores/rechazar_proyecto.html', {'proyecto': proyecto})
     
-    # Si es una solicitud GET, mostrar el formulario
     return render(request, 'emprendedores/rechazar_proyecto.html', {'proyecto': proyecto})
 
 
@@ -694,7 +684,6 @@ def agregar_proyecto(request):
     if request.method == 'POST':
         form = ProyectoForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
-            # Crear el proyecto asociado al usuario actual
             proyecto = form.save(commit=False)
             proyecto.usuario = request.user
             proyecto.estado = 'pendiente'
@@ -710,7 +699,6 @@ def agregar_proyecto(request):
 # Vistas para el Forum Evento 
 @login_required
 def gestion_convocatoria(request):
-    # Solo administradores pueden gestionar convocatorias
     if not request.user.is_superuser:
         return redirect('forum_evento')
     
@@ -720,10 +708,8 @@ def gestion_convocatoria(request):
     if request.method == 'POST':
         form = ConvocatoriaForm(request.POST)
         if form.is_valid():
-            # Si se marca como activa, desactivar las demás
             if form.cleaned_data['activa']:
                 Convocatoria.objects.filter(activa=True).update(activa=False)
-            
             form.save()
             messages.success(request, "Convocatoria guardada exitosamente.")
             return redirect('gestion_convocatoria')
@@ -746,10 +732,8 @@ def editar_convocatoria(request, convocatoria_id):
     if request.method == 'POST':
         form = ConvocatoriaForm(request.POST, instance=convocatoria)
         if form.is_valid():
-            # Si se marca como activa, desactivar las demás
             if form.cleaned_data['activa']:
                 Convocatoria.objects.filter(activa=True).exclude(id=convocatoria_id).update(activa=False)
-            
             form.save()
             messages.success(request, "Convocatoria actualizada exitosamente.")
             return redirect('gestion_convocatoria')
@@ -815,13 +799,11 @@ def ver_convocatoria(request):
         'documentos': documentos
     })
 
-# Vista para el forum evento de ciencias técnicas e innovación
 def forum_evento(request):
     convocatoria_activa = Convocatoria.objects.filter(activa=True).first()
     return render(request, 'emprendedores/forum_evento.html', {
         'convocatoria': convocatoria_activa
     })
-
 
 def programa_forum(request):
     return render(request, 'emprendedores/programa_forum.html')
@@ -879,7 +861,6 @@ def editar_miembro(request, miembro_id):
         return redirect('comision_forum')
 
     return render(request, 'emprendedores/editar_miembro.html', {'miembro': miembro})
-
 
 @login_required
 def eliminar_miembro(request, miembro_id):
@@ -1000,7 +981,6 @@ def eliminar_actividad_programa(request, actividad_id):
     messages.success(request, "Actividad eliminada correctamente.")
     return redirect('programa_forum') 
 
-
 def proyectos_finalizados(request):
     proyectos = Proyecto.objects.filter(estado='finalizado').order_by('-fecha_registro')
     return render(request, 'emprendedores/proyectos_finalizados.html', {'proyectos': proyectos})
@@ -1049,17 +1029,14 @@ def eliminar_trabajo_innovacion(request, trabajo_id):
     messages.success(request, 'Trabajo de innovación eliminado correctamente.')
     return redirect('trabajos_innovacion')
 
-# Vista para proyectos finalizados
 def proyectos_finalizados(request):
     proyectos = Proyecto.objects.filter(estado='finalizado').order_by('-fecha_registro')
     return render(request, 'emprendedores/proyectos_finalizados.html', {'proyectos': proyectos})
 
-# Vista para el resumen de innovación
 def resumen_innovacion(request):
     resumenes = ResumenInnovacion.objects.all().order_by('-año', 'categoria')
     return render(request, 'emprendedores/resumen_innovacion.html', {'resumenes': resumenes})
 
-# Vista para agregar entrada al resumen (solo admin)
 def agregar_resumen_innovacion(request):
     if not request.user.is_superuser:
         return redirect('inicio')
@@ -1075,7 +1052,6 @@ def agregar_resumen_innovacion(request):
     
     return render(request, 'emprendedores/agregar_resumen_innovacion.html', {'form': form})
 
-# Vista para editar entrada del resumen (solo admin)
 def editar_resumen_innovacion(request, resumen_id):
     if not request.user.is_superuser:
         return redirect('inicio')
@@ -1109,10 +1085,8 @@ def participar_forum(request):
             try:
                 participante = form.save()
                 
-                # Obtener el correo configurado
                 configuracion = ConfiguracionCorreo.objects.filter(activo=True).first()
                 if configuracion:
-                    # Enviar correo con los archivos adjuntos
                     from django.core.mail import EmailMessage
                     email = EmailMessage(
                         f'Nueva inscripción al Forum: {participante.numero_expediente}',
@@ -1126,7 +1100,6 @@ def participar_forum(request):
                         [configuracion.email],
                     )
                     
-                    # Adjuntar archivos
                     archivos = [
                         participante.ponencia,
                         participante.ficha_tecnica,
@@ -1218,13 +1191,19 @@ def eliminar_configuracion_correo(request, configuracion_id):
 def crear_sesion_mentoria(request, proyecto_id):
     proyecto = get_object_or_404(Proyecto, id=proyecto_id)
 
-    # Verificar que el usuario es tutor y tiene este proyecto asignado
-    if not hasattr(request.user, 'tutor') or proyecto.tutor != request.user.tutor:
+    if not hasattr(request.user, 'gestorciencias') or proyecto.gestor != request.user.gestorciencias:
         messages.error(request, "No tienes permisos para crear sesiones en este proyecto.")
-        return redirect('panel_tutor')
+        return redirect('panel_gestor')
+
+    sesion_pendiente = SesionMentoria.objects.filter(
+        proyecto=proyecto,
+        estado__in=['propuesta', 'confirmada', 'reprogramacion_solicitada']
+    ).exists()
+    if sesion_pendiente:
+        messages.error(request, "Ya existe una sesión pendiente (propuesta, confirmada o en reprogramación) para este proyecto. No se puede crear otra hasta que se complete o cancele.")
+        return redirect('panel_gestor')
 
     if request.method == 'POST':
-        # Leer campos del modal directamente
         objetivo = request.POST.get('objetivo', '').strip()
         tipo = request.POST.get('tipo', '').strip()
         fecha_propuesta = request.POST.get('fecha_propuesta', '').strip()
@@ -1233,10 +1212,9 @@ def crear_sesion_mentoria(request, proyecto_id):
         agenda = request.POST.get('agenda', '').strip()
         materiales_requeridos = request.POST.get('materiales_requeridos', '').strip()
 
-        # Validaciones básicas
         if not objetivo or not tipo or not fecha_propuesta:
             messages.error(request, "El objetivo, tipo y fecha son obligatorios.")
-            return redirect('panel_tutor')
+            return redirect('panel_gestor')
 
         try:
             sesion = SesionMentoria.objects.create(
@@ -1250,9 +1228,9 @@ def crear_sesion_mentoria(request, proyecto_id):
                 agenda=agenda,
                 materiales_requeridos=materiales_requeridos,
                 estado='propuesta',
+                contador_reprogramaciones=0,
             )
 
-            # Registrar evento
             EventoSesion.objects.create(
                 sesion=sesion,
                 usuario=request.user,
@@ -1260,37 +1238,32 @@ def crear_sesion_mentoria(request, proyecto_id):
                 detalles=f"Sesión '{objetivo}' creada. Tipo: {tipo}. Formato: {formato}."
             )
 
-            # Notificar al emprendedor si tiene usuario
             if proyecto.usuario:
                 Mensaje.objects.create(
                     remitente=request.user,
                     destinatario=proyecto.usuario,
                     tipo_destinatario='emprendedor',
-                    asunto=f'Nueva sesión agendada: {objetivo}',
+                    asunto=f'Nueva solicitud de sesión: {objetivo}',
                     contenido=(
-                        f'Tu Gestor de Ciencias ha agendado una sesión de mentoría para el proyecto "{proyecto.nombre_proyecto}".\n\n'
-                        f'Objetivo: {objetivo}\nFecha: {fecha_propuesta}\nDuración: {duracion} minutos\nModalidad: {formato}'
+                        f'El Gestor de Ciencias ha solicitado una sesión de mentoría para el proyecto "{proyecto.nombre_proyecto}".\n\n'
+                        f'Objetivo: {objetivo}\nFecha propuesta: {fecha_propuesta}\nDuración: {duracion} minutos\nModalidad: {formato}\n\n'
+                        f'Por favor, ingresa al sistema para aceptar o rechazar esta solicitud.'
                     ),
                 )
-
-            messages.success(request, f'Sesión "{objetivo}" agendada correctamente.')
-
+            messages.success(request, f'Solicitud de sesión "{objetivo}" enviada correctamente. El emprendedor debe aceptarla para confirmar.')
         except Exception as e:
             messages.error(request, f'Error al crear la sesión: {str(e)}')
+        return redirect('panel_gestor')
 
-        return redirect('panel_tutor')
-
-    # GET: mostrar formulario clásico (por si se accede por URL directa)
     form = SesionMentoriaForm(proyecto=proyecto, usuario=request.user)
     return render(request, 'emprendedores/sesiones/crear_sesion.html', {
         'form': form,
         'proyecto': proyecto
     })
 
-# Función auxiliar para enviar notificaciones de sesión
 def enviar_notificacion_sesion(sesion, tipo_notificacion):
     if tipo_notificacion in ['nueva_propuesta', 'horarios_propuestos', 'propuesta_aceptada']:
-        destinatario = sesion.proyecto.usuario if sesion.creada_por.groups.filter(name='Tutor').exists() else sesion.creada_por
+        destinatario = sesion.proyecto.usuario if sesion.creada_por.groups.filter(name='Gestor').exists() else sesion.creada_por
     else:
         destinatario = sesion.creada_por
     
@@ -1322,14 +1295,11 @@ def enviar_notificacion_sesion(sesion, tipo_notificacion):
         except Exception as e:
             print(f"Error enviando email: {e}")
 
-
-# Vista para ver el detalle de una sesión de mentoría
 @login_required
 def detalle_sesion(request, sesion_id):
     sesion = get_object_or_404(SesionMentoria, id=sesion_id)
-    # Verificar que el usuario tiene permisos para ver esta sesión
     if not (request.user == sesion.creada_por or 
-            (hasattr(request.user, 'tutor') and sesion.proyecto in request.user.tutor.proyectos_asignados.all()) or
+            (hasattr(request.user, 'gestorciencias') and sesion.proyecto in request.user.gestorciencias.proyectos_gestionados.all()) or
             request.user == sesion.proyecto.usuario):
         messages.error(request, "No tienes permisos para ver esta sesión.")
         return redirect('panel_usuario')
@@ -1337,20 +1307,14 @@ def detalle_sesion(request, sesion_id):
     return render(request, 'emprendedores/sesiones/detalle_sesion.html', {'sesion': sesion})
 
 def banco_problemas(request):
-    # Obtener los años disponibles
     años = BancoProblema.objects.values_list('año', flat=True).distinct().order_by('-año')
-    
-    # Obtener el año seleccionado (por defecto el año más reciente)
     año_seleccionado = request.GET.get('año')
     if año_seleccionado:
         año_seleccionado = int(año_seleccionado)
     else:
         año_seleccionado = años.first() if años else timezone.now().year
     
-    # Obtener los problemas del año seleccionado
     problemas = BancoProblema.objects.filter(año=año_seleccionado).order_by('numero')
-    
-    # Estadísticas
     total_problemas = problemas.count()
     problemas_resueltos = problemas.filter(resuelto=True).count()
     problemas_pendientes = total_problemas - problemas_resueltos
@@ -1422,10 +1386,17 @@ def eliminar_problema(request, problema_id):
     
     return render(request, 'emprendedores/eliminar_problema.html', {'problema': problema})
 
-
 @login_required
 def responder_sesion(request, sesion_id):
     sesion = get_object_or_404(SesionMentoria, id=sesion_id)
+
+    if request.user == sesion.creada_por:
+        messages.error(request, "No puedes responder a tu propia solicitud.")
+        return redirect('panel_usuario')
+    
+    if sesion.estado != 'propuesta':
+        messages.error(request, "Esta sesión ya no está pendiente de respuesta.")
+        return redirect('panel_usuario')
 
     if request.method == 'POST':
         accion = request.POST.get('accion', '').strip()
@@ -1436,161 +1407,168 @@ def responder_sesion(request, sesion_id):
             sesion.save()
             messages.success(request, "Sesión confirmada correctamente.")
 
-            # Notificar al creador de la sesión
             if request.user != sesion.creada_por:
                 Mensaje.objects.create(
                     remitente=request.user,
                     destinatario=sesion.creada_por,
-                    tipo_destinatario='tutor' if hasattr(sesion.creada_por, 'tutor') else 'emprendedor',
+                    tipo_destinatario='gestor' if hasattr(sesion.creada_por, 'gestorciencias') else 'emprendedor',
                     asunto=f'Sesión confirmada: {sesion.proyecto.nombre_proyecto}',
                     contenido=f'La sesión del proyecto "{sesion.proyecto.nombre_proyecto}" ha sido confirmada para el {sesion.fecha_propuesta.strftime("%d/%m/%Y %H:%M")}.',
                 )
 
         elif accion == 'rechazar':
             if not mensaje:
-                messages.error(request, "Debes indicar el motivo de la cancelación.")
+                messages.error(request, "Debes indicar el motivo del rechazo.")
                 return redirect('detalle_sesion', sesion_id=sesion.id)
             sesion.estado = 'cancelada'
             sesion.motivo_rechazo = mensaje
             sesion.save()
-            messages.success(request, "Sesión cancelada correctamente.")
+            messages.success(request, "Sesión rechazada y cancelada.")
 
-            # Notificar al emprendedor
-            if sesion.proyecto.usuario:
-                Mensaje.objects.create(
-                    remitente=request.user,
-                    destinatario=sesion.proyecto.usuario,
-                    tipo_destinatario='emprendedor',
-                    asunto=f'Sesión cancelada: {sesion.proyecto.nombre_proyecto}',
-                    contenido=f'La sesión del proyecto "{sesion.proyecto.nombre_proyecto}" ha sido cancelada.\n\nMotivo: {mensaje}',
-                )
+            Mensaje.objects.create(
+                remitente=request.user,
+                destinatario=sesion.creada_por,
+                tipo_destinatario='gestor' if hasattr(sesion.creada_por, 'gestorciencias') else 'emprendedor',
+                asunto=f'Sesión cancelada: {sesion.proyecto.nombre_proyecto}',
+                contenido=f'La sesión del proyecto "{sesion.proyecto.nombre_proyecto}" ha sido rechazada.\n\nMotivo: {mensaje}',
+            )
+        else:
+            messages.error(request, "Acción no válida.")
+            return redirect('detalle_sesion', sesion_id=sesion.id)
 
-        return redirect('panel_tutor')
+        return redirect('panel_gestor' if hasattr(request.user, 'gestorciencias') else 'panel_emprendedor')
 
-    return redirect('panel_tutor')
+    return render(request, 'emprendedores/sesiones/responder_sesion.html', {'sesion': sesion})
 
 @login_required
 def proponer_horarios(request, sesion_id):
     sesion = get_object_or_404(SesionMentoria, id=sesion_id)
 
-    if not (request.user == sesion.creada_por or
-            request.user == sesion.proyecto.usuario or
-            (hasattr(request.user, 'tutor') and sesion.proyecto.tutor == request.user.tutor)):
-        messages.error(request, "No tienes permisos para proponer horarios para esta sesión.")
+    if sesion.estado != 'confirmada':
+        messages.error(request, "Solo se puede posponer una sesión que ya está confirmada.")
+        return redirect('detalle_sesion', sesion_id=sesion.id)
+    
+    if sesion.contador_reprogramaciones >= 1:
+        messages.error(request, "Esta sesión ya fue pospuesta una vez y no se puede volver a posponer.")
+        return redirect('detalle_sesion', sesion_id=sesion.id)
+
+    if not (request.user == sesion.creada_por or request.user == sesion.proyecto.usuario):
+        messages.error(request, "No tienes permisos para proponer un cambio de horario.")
         return redirect('panel_usuario')
 
-    # Bloquear doble reagendamiento
-    if sesion.estado == 'reprogramacion_solicitada':
-        messages.error(request, "Esta sesión ya fue reagendada una vez y no puede volver a reagendarse.")
-        return redirect('panel_tutor')
-
     if request.method == 'POST':
-        fecha1_str = request.POST.get('fecha_propuesta_1', '').strip()
-        duracion = request.POST.get('duracion', '60').strip()
-        mensaje = request.POST.get('mensaje', '').strip()
-
-        if not fecha1_str:
-            messages.error(request, "Debes indicar la nueva fecha.")
-            return redirect('panel_tutor')
-
-        from django.utils.dateparse import parse_datetime
-        from django.utils import timezone as tz
-        fecha_nueva = parse_datetime(fecha1_str)
-        if fecha_nueva and tz.is_naive(fecha_nueva):
-            fecha_nueva = tz.make_aware(fecha_nueva)
-
-        if fecha_nueva and fecha_nueva <= sesion.fecha_propuesta:
-            messages.error(request, "La nueva fecha debe ser posterior a la fecha original de la sesión.")
-            return redirect('panel_tutor')
-
-        try:
-            PropuestaHorario.objects.create(
+        form = PropuestaHorarioForm(request.POST)
+        if form.is_valid():
+            propuesta = PropuestaHorario.objects.create(
                 sesion=sesion,
-                fecha_propuesta=fecha_nueva,
-                duracion=int(duracion),
+                fecha_propuesta=form.cleaned_data['fecha_propuesta'],
+                duracion=form.cleaned_data['duracion'],
                 propuesto_por=request.user,
-                mensaje=mensaje,
+                mensaje=form.cleaned_data['mensaje'],
             )
-
             sesion.estado = 'reprogramacion_solicitada'
             sesion.save()
 
             EventoSesion.objects.create(
                 sesion=sesion,
                 usuario=request.user,
-                accion='proponer_horarios',
-                detalles=f"Nuevo horario propuesto: {fecha1_str}. Motivo: {mensaje}"
+                accion='proponer_reprogramacion',
+                detalles=f"Nueva fecha propuesta: {propuesta.fecha_propuesta}. Motivo: {propuesta.mensaje}"
             )
 
-            if request.user == sesion.proyecto.usuario:
-                destinatario = sesion.proyecto.tutor.usuario if sesion.proyecto.tutor else None
-            else:
-                destinatario = sesion.proyecto.usuario
+            destinatario = sesion.proyecto.usuario if request.user == sesion.creada_por else sesion.creada_por
+            Mensaje.objects.create(
+                remitente=request.user,
+                destinatario=destinatario,
+                tipo_destinatario='gestor' if hasattr(destinatario, 'gestorciencias') else 'emprendedor',
+                asunto=f'Solicitud de reprogramación: {sesion.proyecto.nombre_proyecto}',
+                contenido=(
+                    f'Se ha solicitado reprogramar la sesión del proyecto "{sesion.proyecto.nombre_proyecto}".\n\n'
+                    f'Nueva fecha propuesta: {propuesta.fecha_propuesta.strftime("%d/%m/%Y %H:%M")}\n'
+                    f'Motivo: {propuesta.mensaje}\n\n'
+                    f'Por favor, ingresa al sistema para aceptar o rechazar esta solicitud.'
+                ),
+            )
+            messages.success(request, "Solicitud de reprogramación enviada correctamente. La otra parte debe aceptarla para que el cambio sea efectivo.")
+        else:
+            messages.error(request, "Error en el formulario. Revise los datos.")
+        return redirect('detalle_sesion', sesion_id=sesion.id)
 
-            if destinatario:
-                Mensaje.objects.create(
-                    remitente=request.user,
-                    destinatario=destinatario,
-                    tipo_destinatario='tutor' if hasattr(destinatario, 'tutor') else 'emprendedor',
-                    asunto=f'Solicitud de reagendamiento: {sesion.proyecto.nombre_proyecto}',
-                    contenido=(
-                        f'Se ha solicitado reagendar la sesión del proyecto "{sesion.proyecto.nombre_proyecto}".\n\n'
-                        f'Nueva fecha propuesta: {fecha1_str}\nMotivo: {mensaje}'
-                    ),
-                )
-
-            messages.success(request, "Propuesta de reagendamiento enviada correctamente.")
-
-        except Exception as e:
-            messages.error(request, f'Error al proponer horario: {str(e)}')
-
-    return redirect('panel_tutor')
+    form = PropuestaHorarioForm()
+    return render(request, 'emprendedores/sesiones/proponer_horarios.html', {'form': form, 'sesion': sesion})
 
 @login_required
 def aceptar_propuesta_horario(request, propuesta_id):
     propuesta = get_object_or_404(PropuestaHorario, id=propuesta_id)
     sesion = propuesta.sesion
-    
-    # Verificar permisos - solo el creador de la sesión o el tutor/emprendedor relacionado pueden aceptar propuestas
-    if not (request.user == sesion.creada_por or 
-            (hasattr(request.user, 'tutor') and sesion.proyecto.tutor == request.user.tutor) or
-            request.user == sesion.proyecto.usuario):
-        messages.error(request, "No tienes permisos para aceptar esta propuesta.")
-        return redirect('panel_usuario')
-    
-    if request.method == 'POST':
-        # Actualizar la sesión con los nuevos datos de la propuesta
-        sesion.fecha_propuesta = propuesta.fecha_propuesta
-        sesion.duracion = propuesta.duracion
-        sesion.estado = 'confirmada'
-        sesion.save()
-        
-        # Marcar la propuesta como aceptada
-        propuesta.aceptada = True
-        propuesta.save()
-        
-        # Registrar evento
-        EventoSesion.objects.create(
-            sesion=sesion,
-            usuario=request.user,
-            accion='aceptar_propuesta_horario',
-            detalles=f"Propuesta de horario aceptada: {propuesta.fecha_propuesta} por {propuesta.duracion} minutos."
-        )
-        
-        messages.success(request, "Propuesta de horario aceptada. La sesión ha sido reprogramada.")
+
+    if sesion.estado != 'reprogramacion_solicitada':
+        messages.error(request, "Esta sesión no está pendiente de reprogramación.")
         return redirect('detalle_sesion', sesion_id=sesion.id)
-    
-    # Si es GET, mostrar página de confirmación
-    return render(request, 'emprendedores/sesiones/aceptar_propuesta.html', {'propuesta': propuesta})    
+
+    if propuesta.aceptada:
+        messages.error(request, "Esta propuesta ya fue aceptada.")
+        return redirect('detalle_sesion', sesion_id=sesion.id)
+
+    if request.user == propuesta.propuesto_por:
+        messages.error(request, "No puedes aceptar tu propia propuesta de reprogramación.")
+        return redirect('detalle_sesion', sesion_id=sesion.id)
+
+    if request.method == 'POST':
+        accion = request.POST.get('accion', '').strip()
+        if accion == 'aceptar':
+            sesion.fecha_propuesta = propuesta.fecha_propuesta
+            sesion.duracion = propuesta.duracion
+            sesion.estado = 'confirmada'
+            sesion.contador_reprogramaciones = 1
+            sesion.save()
+            propuesta.aceptada = True
+            propuesta.save()
+
+            EventoSesion.objects.create(
+                sesion=sesion,
+                usuario=request.user,
+                accion='aceptar_reprogramacion',
+                detalles=f"Reprogramación aceptada. Nueva fecha: {propuesta.fecha_propuesta}"
+            )
+            Mensaje.objects.create(
+                remitente=request.user,
+                destinatario=propuesta.propuesto_por,
+                tipo_destinatario='gestor' if hasattr(propuesta.propuesto_por, 'gestorciencias') else 'emprendedor',
+                asunto=f'Reprogramación aceptada: {sesion.proyecto.nombre_proyecto}',
+                contenido=f'La reprogramación solicitada para el proyecto "{sesion.proyecto.nombre_proyecto}" ha sido ACEPTADA. La nueva fecha es {propuesta.fecha_propuesta.strftime("%d/%m/%Y %H:%M")}.'
+            )
+            messages.success(request, "Reprogramación aceptada. La sesión ha sido actualizada.")
+        elif accion == 'rechazar':
+            sesion.estado = 'confirmada'
+            sesion.save()
+            EventoSesion.objects.create(
+                sesion=sesion,
+                usuario=request.user,
+                accion='rechazar_reprogramacion',
+                detalles="Reprogramación rechazada. Se mantiene la fecha original."
+            )
+            Mensaje.objects.create(
+                remitente=request.user,
+                destinatario=propuesta.propuesto_por,
+                tipo_destinatario='gestor' if hasattr(propuesta.propuesto_por, 'gestorciencias') else 'emprendedor',
+                asunto=f'Reprogramación rechazada: {sesion.proyecto.nombre_proyecto}',
+                contenido=f'La reprogramación solicitada para el proyecto "{sesion.proyecto.nombre_proyecto}" ha sido RECHAZADA. Se mantiene la fecha original: {sesion.fecha_propuesta.strftime("%d/%m/%Y %H:%M")}.'
+            )
+            messages.info(request, "Reprogramación rechazada. La sesión mantiene su fecha original.")
+        else:
+            messages.error(request, "Acción no válida.")
+        return redirect('detalle_sesion', sesion_id=sesion.id)
+
+    return render(request, 'emprendedores/sesiones/aceptar_reprogramacion.html', {'propuesta': propuesta})
 
 @login_required
 def subir_archivo_sesion(request, sesion_id):
     sesion = get_object_or_404(SesionMentoria, id=sesion_id)
     
-    # Verificar permisos - solo participantes de la sesión pueden subir archivos
     if not (request.user == sesion.creada_por or 
             request.user == sesion.proyecto.usuario or
-            (hasattr(request.user, 'tutor') and sesion.proyecto.tutor == request.user.tutor)):
+            (hasattr(request.user, 'gestorciencias') and sesion.proyecto.gestor == request.user.gestorciencias)):
         messages.error(request, "No tienes permisos para subir archivos a esta sesión.")
         return redirect('panel_usuario')
     
@@ -1602,7 +1580,6 @@ def subir_archivo_sesion(request, sesion_id):
             archivo.subido_por = request.user
             archivo.save()
             
-            # Registrar evento
             EventoSesion.objects.create(
                 sesion=sesion,
                 usuario=request.user,
@@ -1620,24 +1597,20 @@ def subir_archivo_sesion(request, sesion_id):
         'sesion': sesion
     })
 
-
 @login_required
 def marcar_sesion_realizada(request, sesion_id):
     sesion = get_object_or_404(SesionMentoria, id=sesion_id)
     
-    # Verificar permisos - solo participantes de la sesión pueden marcarla como realizada
     if not (request.user == sesion.creada_por or 
             request.user == sesion.proyecto.usuario or
-            (hasattr(request.user, 'tutor') and sesion.proyecto.tutor == request.user.tutor)):
+            (hasattr(request.user, 'gestorciencias') and sesion.proyecto.gestor == request.user.gestorciencias)):
         messages.error(request, "No tienes permisos para marcar esta sesión como realizada.")
         return redirect('panel_usuario')
     
     if request.method == 'POST':
-        # Cambiar el estado de la sesión a realizada
         sesion.estado = 'realizada'
         sesion.save()
         
-        # Registrar evento
         EventoSesion.objects.create(
             sesion=sesion,
             usuario=request.user,
@@ -1648,17 +1621,52 @@ def marcar_sesion_realizada(request, sesion_id):
         messages.success(request, "Sesión marcada como realizada correctamente.")
         return redirect('detalle_sesion', sesion_id=sesion.id)
     
-    # Si es GET, mostrar página de confirmación
     return render(request, 'emprendedores/sesiones/marcar_realizada.html', {'sesion': sesion})    
 
+@login_required
+def cancelar_sesion(request, sesion_id):
+    sesion = get_object_or_404(SesionMentoria, id=sesion_id)
+
+    if sesion.estado in ['realizada', 'cancelada']:
+        messages.error(request, "Esta sesión ya no se puede cancelar.")
+        return redirect('detalle_sesion', sesion_id=sesion.id)
+
+    if request.method == 'POST':
+        motivo = request.POST.get('motivo', '').strip()
+        if not motivo:
+            messages.error(request, "Debes indicar el motivo de la cancelación.")
+            return redirect('detalle_sesion', sesion_id=sesion.id)
+
+        sesion.estado = 'cancelada'
+        sesion.motivo_cancelacion = motivo
+        sesion.save()
+
+        EventoSesion.objects.create(
+            sesion=sesion,
+            usuario=request.user,
+            accion='cancelar_sesion',
+            detalles=f"Sesión cancelada. Motivo: {motivo}"
+        )
+
+        otra_parte = sesion.proyecto.usuario if request.user == sesion.creada_por else sesion.creada_por
+        Mensaje.objects.create(
+            remitente=request.user,
+            destinatario=otra_parte,
+            tipo_destinatario='gestor' if hasattr(otra_parte, 'gestorciencias') else 'emprendedor',
+            asunto=f'Sesión cancelada: {sesion.proyecto.nombre_proyecto}',
+            contenido=f'La sesión del proyecto "{sesion.proyecto.nombre_proyecto}" ha sido CANCELADA por {request.user.get_full_name()}.\n\nMotivo: {motivo}'
+        )
+        messages.success(request, "La sesión ha sido cancelada correctamente.")
+        return redirect('panel_gestor' if hasattr(request.user, 'gestorciencias') else 'panel_emprendedor')
+
+    return render(request, 'emprendedores/sesiones/cancelar_sesion.html', {'sesion': sesion})
 
 @login_required
 def listar_sesiones_proyecto(request, proyecto_id):
     proyecto = get_object_or_404(Proyecto, id=proyecto_id)
     
-    # Verificar permisos - solo el tutor asignado o el emprendedor dueño del proyecto pueden ver las sesiones
     if not (request.user == proyecto.usuario or 
-            (hasattr(request.user, 'tutor') and proyecto.tutor == request.user.tutor)):
+            (hasattr(request.user, 'gestorciencias') and proyecto.gestor == request.user.gestorciencias)):
         messages.error(request, "No tienes permisos para ver las sesiones de este proyecto.")
         return redirect('panel_usuario')
     
@@ -1671,12 +1679,11 @@ def listar_sesiones_proyecto(request, proyecto_id):
 
 @login_required
 def ver_mensajes(request):
-    
     mensajes = Mensaje.objects.filter(destinatario=request.user).order_by('-fecha_envio')
-    
     return render(request, 'emprendedores/ver_mensajes.html', {
         'mensajes': mensajes
     })
+
 @require_POST
 @login_required
 def marcar_mensaje_leido(request, mensaje_id):
@@ -1695,12 +1702,10 @@ def lista_proyectos(request):
 
     proyectos = Proyecto.objects.all()
 
-    # Filtro por estado
     estado_filter = request.GET.get('estado', '')
     if estado_filter:
         proyectos = proyectos.filter(estado=estado_filter)
 
-    # Filtro por presupuesto (rango)
     presupuesto_min = request.GET.get('presupuesto_min', '')
     presupuesto_max = request.GET.get('presupuesto_max', '')
     if presupuesto_min:
@@ -1708,7 +1713,6 @@ def lista_proyectos(request):
     if presupuesto_max:
         proyectos = proyectos.filter(presupuesto_estimado__lte=presupuesto_max)
 
-    # Filtro por fecha de creación (rango)
     fecha_desde = request.GET.get('fecha_desde', '')
     fecha_hasta = request.GET.get('fecha_hasta', '')
     if fecha_desde:
@@ -1727,26 +1731,24 @@ def lista_proyectos(request):
     })
 
 @login_required
-def lista_tutores(request):
+def lista_gestores(request):
     if not request.user.is_superuser:
         return redirect('panel_usuario')
-    tutores = Tutor.objects.all()
-    return render(request, 'emprendedores/lista_tutores.html', {'tutores': tutores})
-
+    gestores = GestorCiencias.objects.all()
+    return render(request, 'emprendedores/lista_gestores.html', {'gestores': gestores})
 
 @login_required
 def lista_emprendedores(request):
     if not request.user.is_superuser:
         return redirect('panel_usuario')
-    tutor_user_ids = Tutor.objects.values_list('usuario_id', flat=True)
-    emprendedores = User.objects.filter(is_superuser=False).exclude(id__in=tutor_user_ids)
+    gestor_user_ids = GestorCiencias.objects.values_list('usuario_id', flat=True)
+    emprendedores = User.objects.filter(is_superuser=False).exclude(id__in=gestor_user_ids)
     for emprendedor in emprendedores:
         emprendedor.num_proyectos = Proyecto.objects.filter(usuario=emprendedor).count()
         if not hasattr(emprendedor, 'emprendedor_profile'):
             EmprendedorProfile.objects.create(user=emprendedor)
     return render(request, 'emprendedores/lista_emprendedores.html', {'emprendedores': emprendedores})
 
-# Fltrados de lista proyectos 
 @login_required
 def lista_proyectos(request):
     if not request.user.is_superuser:
@@ -1754,23 +1756,18 @@ def lista_proyectos(request):
 
     proyectos = Proyecto.objects.all()
 
-    # Filtro por estado
     estado_filter = request.GET.get('estado', '')
     if estado_filter:
         proyectos = proyectos.filter(estado=estado_filter)
 
-    # Filtro por presupuesto (manejo de NULL)
     presupuesto_min = request.GET.get('presupuesto_min', '').strip()
     presupuesto_max = request.GET.get('presupuesto_max', '').strip()
     if presupuesto_min:
-        # Convertir a número
         try:
             min_val = float(presupuesto_min)
-            # Incluir proyectos con presupuesto NULL? Normalmente no se incluyen.
-            # Si quieres incluir NULL, usa Q objects. Por ahora, filtramos solo los que tienen valor.
             proyectos = proyectos.filter(presupuesto_estimado__gte=min_val)
         except ValueError:
-            pass  # ignorar valor no numérico
+            pass
     if presupuesto_max:
         try:
             max_val = float(presupuesto_max)
@@ -1778,7 +1775,6 @@ def lista_proyectos(request):
         except ValueError:
             pass
 
-    # Filtro por fecha
     fecha_desde = request.GET.get('fecha_desde', '').strip()
     fecha_hasta = request.GET.get('fecha_hasta', '').strip()
     if fecha_desde:
@@ -1797,11 +1793,9 @@ def lista_proyectos(request):
     }
     return render(request, 'emprendedores/lista_proyectos.html', context)
 
-
-#  crear tareas de forma manual 
 @login_required
-def crear_tarea_tutor(request):
-    if not hasattr(request.user, 'tutor'):
+def crear_tarea_gestor(request):
+    if not hasattr(request.user, 'gestorciencias'):
         messages.error(request, "No tienes permisos para realizar esta acción.")
         return redirect('panel_usuario')
     
@@ -1813,7 +1807,7 @@ def crear_tarea_tutor(request):
         dias_limite = request.POST.get('dias_limite', '7')
         
         if titulo and proyecto_id:
-            proyecto = get_object_or_404(Proyecto, id=proyecto_id, tutor=request.user.tutor)
+            proyecto = get_object_or_404(Proyecto, id=proyecto_id, gestor=request.user.gestorciencias)
             try:
                 dias = int(dias_limite)
                 if dias < 1:
@@ -1834,36 +1828,31 @@ def crear_tarea_tutor(request):
         else:
             messages.error(request, 'El título y el proyecto son obligatorios.')
     
-    return redirect('panel_tutor')
-
+    return redirect('panel_gestor')
 
 @login_required
-def bandeja_tutor(request):
-    if not hasattr(request.user, 'tutor'):
+def bandeja_gestor(request):
+    if not hasattr(request.user, 'gestorciencias'):
         return redirect('panel_usuario')
 
-    # Mensajes recibidos por el tutor
     mensajes_recibidos = Mensaje.objects.filter(
         destinatario=request.user
     ).order_by('-fecha_envio')
 
-    # Mensajes enviados por el tutor
     mensajes_enviados = Mensaje.objects.filter(
         remitente=request.user
     ).order_by('-fecha_envio')
 
-    # Cantidad de no leídos para el badge
     no_leidos = mensajes_recibidos.filter(leido=False).count()
 
-    # Lista de usuarios a quienes puede enviar mensajes
-    tutor = get_object_or_404(Tutor, usuario=request.user)
-    proyectos = Proyecto.objects.filter(tutor=tutor)
+    gestor = get_object_or_404(GestorCiencias, usuario=request.user)
+    proyectos = Proyecto.objects.filter(gestor=gestor)
     emprendedores = User.objects.filter(
         proyectos__in=proyectos
     ).distinct()
     administradores = User.objects.filter(is_superuser=True)
 
-    return render(request, 'emprendedores/bandeja_tutor.html', {
+    return render(request, 'emprendedores/bandeja_gestor.html', {
         'mensajes_recibidos': mensajes_recibidos,
         'mensajes_enviados': mensajes_enviados,
         'no_leidos': no_leidos,
@@ -1871,19 +1860,24 @@ def bandeja_tutor(request):
         'administradores': administradores,
     })
 
-
 @login_required
 def solicitar_sesion_emprendedor(request, proyecto_id):
     proyecto = get_object_or_404(Proyecto, id=proyecto_id)
  
-    # Solo el emprendedor dueño del proyecto puede solicitar sesiones
     if request.user != proyecto.usuario:
         messages.error(request, "No tienes permisos para solicitar sesiones en este proyecto.")
         return redirect('panel_emprendedor')
  
-    # El proyecto debe tener tutor asignado
-    if not proyecto.tutor:
-        messages.error(request, "Tu proyecto no tiene tutor asignado aún.")
+    if not proyecto.gestor:
+        messages.error(request, "Tu proyecto no tiene gestor asignado aún.")
+        return redirect('panel_emprendedor')
+ 
+    sesion_pendiente = SesionMentoria.objects.filter(
+        proyecto=proyecto,
+        estado__in=['propuesta', 'confirmada', 'reprogramacion_solicitada']
+    ).exists()
+    if sesion_pendiente:
+        messages.error(request, "Ya existe una sesión pendiente para este proyecto. No puedes solicitar otra hasta que se complete o cancele.")
         return redirect('panel_emprendedor')
  
     if request.method == 'POST':
@@ -1909,21 +1903,18 @@ def solicitar_sesion_emprendedor(request, proyecto_id):
                 formato=formato,
                 agenda=agenda,
                 estado='propuesta',
+                contador_reprogramaciones=0,
             )
- 
-            # Registrar evento
             EventoSesion.objects.create(
                 sesion=sesion,
                 usuario=request.user,
                 accion='solicitar_sesion',
                 detalles=f"El emprendedor solicitó una sesión: {objetivo}. Fecha propuesta: {fecha_propuesta}."
             )
- 
-            # Notificar al tutor via mensaje interno
             Mensaje.objects.create(
                 remitente=request.user,
-                destinatario=proyecto.tutor.usuario,
-                tipo_destinatario='tutor',
+                destinatario=proyecto.gestor.usuario,
+                tipo_destinatario='gestor',
                 asunto=f'Solicitud de sesión: {proyecto.nombre_proyecto}',
                 contenido=(
                     f'El emprendedor {request.user.get_full_name()} ha solicitado una sesión de mentoría '
@@ -1936,9 +1927,7 @@ def solicitar_sesion_emprendedor(request, proyecto_id):
                     f'Puedes aceptar o rechazar la solicitud desde tu panel.'
                 ),
             )
- 
-            messages.success(request, 'Solicitud de sesión enviada correctamente. Tu tutor la revisará pronto.')
- 
+            messages.success(request, 'Solicitud de sesión enviada correctamente. El gestor la revisará pronto.')
         except Exception as e:
             messages.error(request, f'Error al enviar la solicitud: {str(e)}')
  
@@ -1971,7 +1960,6 @@ def bandeja_emprendedor(request):
         'proyectos': proyectos,
     })
 
-
 def ventanilla_unica(request):
     total_proyectos = Proyecto.objects.count()
     proyectos_activos = Proyecto.objects.filter(estado__in=['revision', 'asignado']).count()
@@ -1987,7 +1975,6 @@ def ventanilla_unica(request):
         'proyectos_publicos': proyectos_publicos,
         'demandas': demandas,
     })
-
 
 def enviar_solicitud_ventanilla(request):
     if request.method == 'POST':
@@ -2014,7 +2001,6 @@ def enviar_solicitud_ventanilla(request):
                 documentacion=documentacion,
             )
 
-            # Enviar email de confirmación al solicitante
             try:
                 asunto_solicitante = f'Solicitud recibida — Expediente {solicitud.numero_expediente}'
                 cuerpo_solicitante = (
@@ -2030,7 +2016,6 @@ def enviar_solicitud_ventanilla(request):
             except Exception:
                 pass
 
-            # Notificar al administrador
             try:
                 tipo_label = solicitud.get_tipo_display()
                 asunto_admin = f'Nueva {tipo_label} en Ventanilla Única — {solicitud.numero_expediente}'
@@ -2057,7 +2042,6 @@ def enviar_solicitud_ventanilla(request):
             messages.error(request, 'Por favor complete todos los campos obligatorios.')
     return redirect('ventanilla_unica')
 
-
 @login_required
 def gestionar_solicitud_ventanilla(request, solicitud_id):
     if not request.user.is_superuser:
@@ -2075,7 +2059,6 @@ def gestionar_solicitud_ventanilla(request, solicitud_id):
             solicitud.save()
             messages.success(request, f'Estado actualizado a: {solicitud.get_estado_display()}')
 
-        # Si hay respuesta, enviar email al solicitante
         if respuesta_email and solicitud.email:
             try:
                 asunto = f'Respuesta a su solicitud {solicitud.numero_expediente} — Desoft Santiago de Cuba'

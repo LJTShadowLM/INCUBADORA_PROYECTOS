@@ -40,8 +40,8 @@ class Proyecto(models.Model):
     )
 
     
-    tutor = models.ForeignKey('Tutor', on_delete=models.SET_NULL, null=True, blank=True, 
-                            related_name='proyectos_tutorizados')
+    gestor = models.ForeignKey('GestorCiencias', on_delete=models.SET_NULL, null=True, blank=True, 
+                            related_name='proyectos_gestionados')
     
     class Meta:
         ordering = ['-fecha_registro']
@@ -50,8 +50,8 @@ class Proyecto(models.Model):
         return self.nombre_proyecto
 
 
-# Modelo Tutor
-class Tutor(models.Model):
+# Modelo GestorCiencias
+class GestorCiencias(models.Model):
     GRADOS_ACADEMICOS = (
         ('tecnico', 'Técnico'),
         ('licenciatura', 'Licenciatura'),
@@ -74,13 +74,13 @@ class Tutor(models.Model):
     
     @property
     def proyectos_actuales(self):
-        return self.proyectos_tutorizados.count()
+        return self.proyectos_gestionados.count()
     
 
 # Modelo para el perfil de emprendedor
 class EmprendedorProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='emprendedor_profile')
-    tutor = models.ForeignKey(Tutor, on_delete=models.SET_NULL, null=True, blank=True, related_name='emprendedores_asignados')
+    gestor = models.ForeignKey(GestorCiencias, on_delete=models.SET_NULL, null=True, blank=True, related_name='emprendedores_asignados')
     
     def __str__(self):
         return f"Perfil de {self.user.get_full_name()}"
@@ -159,7 +159,7 @@ class SesionMentoria(models.Model):
     sesion_original = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='reprogramaciones')
     contador_reprogramaciones = models.PositiveIntegerField(default=0)
     
-    tutor_presente = models.BooleanField(default=False)
+    gestor_presente = models.BooleanField(default=False)
     emprendedor_presente = models.BooleanField(default=False)
     minuta = models.TextField(blank=True)
     
@@ -185,8 +185,8 @@ class SesionMentoria(models.Model):
         from django.db.models import Q
         fecha_fin = self.fecha_propuesta + timezone.timedelta(minutes=self.duracion)
         
-        conflicto_tutor = SesionMentoria.objects.filter(
-            Q(proyecto__tutores=self.creada_por.tutor) | Q(creada_por=self.creada_por),
+        conflicto_gestor = SesionMentoria.objects.filter(
+            Q(proyecto__gestores=self.creada_por.gestor) | Q(creada_por=self.creada_por),
             estado='confirmada',
             fecha_propuesta__lt=fecha_fin,
             fecha_propuesta__gt=self.fecha_propuesta - timezone.timedelta(minutes=self.duracion)
@@ -199,7 +199,7 @@ class SesionMentoria(models.Model):
             fecha_propuesta__gt=self.fecha_propuesta - timezone.timedelta(minutes=self.duracion)
         ).exclude(id=self.id).exists()
         
-        return conflicto_tutor or conflicto_emprendedor
+        return conflicto_gestor or conflicto_emprendedor
 
 
 class ArchivoSesion(models.Model):
@@ -248,7 +248,7 @@ class PropuestaHorario(models.Model):
 # Modelo Mensaje
 class Mensaje(models.Model):
     TIPOS_DESTINATARIO = (
-        ('tutor', 'Tutor'),
+        ('gestor', 'Gestor de Ciencias'),
         ('emprendedor', 'Emprendedor'),
         ('administrador', 'Administrador'),
     )

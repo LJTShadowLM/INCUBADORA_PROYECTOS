@@ -29,16 +29,16 @@
                         <th>Sector</th>
                         <th>Fecha de Registro</th>
                         <th>Progreso</th>
-                        <th>Tutor</th>
+                        <th>Gestor</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for proyecto in proyectos %}
                     <tr>
-                        <td>{{ proyecto.nombre_proyecto }}</td>
-                        <td>{{ proyecto.descripcion|truncatewords:20 }}</td>
-                        <td>{{ proyecto.get_sector_display }}</td>
-                        <td>{{ proyecto.fecha_registro|date:"d/m/Y" }}</td>
+                        <td>{{ proyecto.nombre_proyecto }}</a>
+                        <td>{{ proyecto.descripcion|truncatewords:20 }}</a>
+                        <td>{{ proyecto.get_sector_display }}</a>
+                        <td>{{ proyecto.fecha_registro|date:"d/m/Y" }}</a>
                         <td>
                             <div class="progress" style="height: 20px;">
                                 <div class="progress-bar bg-success" role="progressbar" 
@@ -49,23 +49,23 @@
                                     {{ proyecto.progreso }}%
                                 </div>
                             </div>
-                        </td>
+                        </a>
                         <td>
-                            {% if proyecto.tutor %}
-                                {{ proyecto.tutor.usuario.get_full_name }}
+                            {% if proyecto.gestor %}
+                                {{ proyecto.gestor.usuario.get_full_name }}
                             {% else %}
                                 Sin asignar
                             {% endif %}
-                        </td>
-                    </tr>
+                        </a>
+                    </a>
                     {% empty %}
                     <tr>
                         <td colspan="6" class="text-center py-4">
                             <i class="bi bi-inbox display-4 d-block text-muted mb-3"></i>
                             <h5 class="text-muted">No hay proyectos finalizados aún</h5>
                             <p class="text-muted">Los proyectos que finalicen aparecerán aquí</p>
-                        </td>
-                    </tr>
+                        </a>
+                    </a>
                     {% endfor %}
                 </tbody>
             </table>

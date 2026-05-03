@@ -1,9 +1,9 @@
 # admin.py
 from django.contrib import admin
-from .models import Proyecto, Tutor
+from .models import Proyecto, GestorCiencias
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.admin import UserAdmin
-from .models import Proyecto, Tutor, SesionMentoria, Tarea
+from .models import Proyecto, GestorCiencias, SesionMentoria, Tarea
 
 # Ocultar grupos y usuarios predeterminados
 admin.site.unregister(Group)
@@ -26,14 +26,13 @@ class ProyectoAdmin(admin.ModelAdmin):
         self.message_user(request, f"{count} proyectos eliminados correctamente")
     eliminar_seleccionados.short_description = "Eliminar proyectos seleccionados"
 
-class TutorAdmin(admin.ModelAdmin):
+class GestorCienciasAdmin(admin.ModelAdmin):
     list_display = ('nombre_completo', 'email', 'grado_academico', 'institucion', 'proyectos_actuales')
     search_fields = ('usuario__username', 'especialidades', 'usuario__first_name', 'usuario__last_name', 'usuario__email')
     list_filter = ('grado_academico', 'institucion')
-    # Eliminar esta línea: filter_horizontal = ('proyectos_asignados',)
     
     def proyectos_actuales(self, obj):
-        return obj.proyectos_asignados.count()
+        return obj.proyectos_gestionados.count()  # asumiendo related_name='proyectos_gestionados'
     proyectos_actuales.short_description = 'Proyectos'
     
     def nombre_completo(self, obj):
@@ -48,13 +47,13 @@ class TutorAdmin(admin.ModelAdmin):
     actions = ['eliminar_seleccionados']
     
     def eliminar_seleccionados(self, request, queryset):
-        for tutor in queryset:
-            usuario = tutor.usuario
-            tutor.delete()
+        for gestor in queryset:
+            usuario = gestor.usuario
+            gestor.delete()
             usuario.delete()
         count = queryset.count()
-        self.message_user(request, f"{count} tutores eliminados correctamente")
-    eliminar_seleccionados.short_description = "Eliminar tutores seleccionados"
+        self.message_user(request, f"{count} gestores eliminados correctamente")
+    eliminar_seleccionados.short_description = "Eliminar gestores seleccionados"
 
 # Modelo personalizado para emprendedores
 class EmprendedorAdmin(UserAdmin):
@@ -80,7 +79,7 @@ class EmprendedorAdmin(UserAdmin):
 
 # Registrar modelos personalizados
 admin.site.register(Proyecto, ProyectoAdmin)
-admin.site.register(Tutor, TutorAdmin)
+admin.site.register(GestorCiencias, GestorCienciasAdmin)
 admin.site.register(User, EmprendedorAdmin)
 admin.site.register(SesionMentoria)
 admin.site.register(Tarea)

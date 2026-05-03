@@ -42,8 +42,8 @@
                             <p class="mb-1">{{ proyecto.descripcion|truncatechars:100 }}</p>
                             <small class="text-muted">
                                 Registrado el: {{ proyecto.fecha_registro|date:"d/m/Y" }}
-                                {% if proyecto.tutores.exists %}
-                                | Tutor asignado: {{ proyecto.tutores.first }}
+                                {% if proyecto.gestor %}
+                                | Gestor asignado: {{ proyecto.gestor.usuario.get_full_name }}
                                 {% endif %}
                             </small>
                             <div class="mt-2">
@@ -64,8 +64,8 @@
                         <a href="{% url 'panel_admin' %}" class="btn btn-secondary">
                             <i class="bi bi-arrow-left"></i> Volver al panel
                         </a>
-                        <a href="{% url 'asignar_tutor_emprendedor' emprendedor.id %}" class="btn btn-primary">
-                            <i class="bi bi-person-plus"></i> Asignar Tutor
+                        <a href="{% url 'asignar_gestor_emprendedor' emprendedor.id %}" class="btn btn-primary">
+                            <i class="bi bi-person-plus"></i> Asignar Gestor
                         </a>
                     </div>
                 </div>

@@ -15,15 +15,15 @@
                     <a href="{% url 'gestionar_correo' %}" class="btn btn-light me-2">
                         <i class="bi bi-envelope"></i> Configurar Correo
                     </a>
-                    <a href="{% url 'registrar_tutor' %}" class="btn btn-light me-2">
+                    <a href="{% url 'registrar_gestor' %}" class="btn btn-light me-2">
                         <i class="bi bi-person-plus"></i> Registrar Gestor de Ciencias
                     </a>
-                    <!--  BOTONES PARA LISTAS -->
+                    <!-- BOTONES PARA LISTAS -->
                     <a href="{% url 'lista_proyectos' %}" class="btn btn-light me-2">
                         <i class="bi bi-folder"></i> Ver Proyectos
                     </a>
-                    <a href="{% url 'lista_tutores' %}" class="btn btn-light me-2">
-                        <i class="bi bi-people"></i> Ver Gestor de Ciencias
+                    <a href="{% url 'lista_gestores' %}" class="btn btn-light me-2">
+                        <i class="bi bi-people"></i> Ver Gestores de Ciencias
                     </a>
                     <a href="{% url 'lista_emprendedores' %}" class="btn btn-light me-2">
                         <i class="bi bi-person"></i> Ver Emprendedores
@@ -34,39 +34,38 @@
         <div class="card-body">
            
             <div class="row">
-                <!-- Sección de Tutores -->
+                <!-- Sección de Gestores -->
                 <div class="col-md-6">
-                    <h4>Gestor de Ciencias</h4>
-                    <!-- ELIMINADO: Formulario de filtro por especialidad -->
+                    <h4>Gestores de Ciencias</h4>
                     <div class="list-group mb-4">
-                        {% for tutor in tutores %}
+                        {% for gestor in gestores %}
                         <div class="list-group-item">
                             <div class="d-flex w-100 justify-content-between">
-                                <h5 class="mb-1">{{ tutor.usuario.get_full_name }}</h5>
+                                <h5 class="mb-1">{{ gestor.usuario.get_full_name }}</h5>
                                 <small class="badge bg-info">
-                                    Proyectos: {{ tutor.proyectos_actuales }}/{{ tutor.max_proyectos }}
+                                    Proyectos: {{ gestor.proyectos_actuales }}/{{ gestor.max_proyectos }}
                                 </small>
                             </div>
                             <p class="mb-1">
-                                <strong>Email:</strong> {{ tutor.usuario.email }}<br>
-                                <strong>Especialidades:</strong> {{ tutor.especialidades|truncatechars:100 }}
+                                <strong>Email:</strong> {{ gestor.usuario.email }}<br>
+                                <strong>Especialidades:</strong> {{ gestor.especialidades|truncatechars:100 }}
                             </p>
                             <div class="mt-2">
-                                <!-- Botón para enviar mensaje a este tutor -->
+                                <!-- Botón para enviar mensaje a este gestor -->
                                 <button type="button" class="btn btn-sm btn-outline-primary me-1" 
                                         data-bs-toggle="modal" data-bs-target="#mensajeModal"
-                                        data-destinatario-id="{{ tutor.usuario.id }}"
-                                        data-destinatario-nombre="{{ tutor.usuario.get_full_name }}"
-                                        data-tipo-destinatario="tutor">
+                                        data-destinatario-id="{{ gestor.usuario.id }}"
+                                        data-destinatario-nombre="{{ gestor.usuario.get_full_name }}"
+                                        data-tipo-destinatario="gestor">
                                     <i class="bi bi-envelope"></i> Enviar Mensaje
                                 </button>
-                                <a href="{% url 'editar_tutor' tutor.id %}" class="btn btn-sm btn-warning me-1">
+                                <a href="{% url 'editar_gestor' gestor.id %}" class="btn btn-sm btn-warning me-1">
                                     <i class="bi bi-pencil"></i> Editar
                                 </a>
-                                <a href="{% url 'eliminar_tutor' tutor.id %}" class="btn btn-sm btn-danger me-1">
+                                <a href="{% url 'eliminar_gestor' gestor.id %}" class="btn btn-sm btn-danger me-1">
                                     <i class="bi bi-trash"></i> Eliminar
                                 </a>
-                                <a href="{% url 'ver_tutor' tutor.id %}" class="btn btn-sm btn-info">
+                                <a href="{% url 'ver_gestor' gestor.id %}" class="btn btn-sm btn-info">
                                     <i class="bi bi-info-circle"></i> Ver Info
                                 </a>
                             </div>
@@ -78,7 +77,6 @@
                 <!-- Sección de Emprendedores -->
                 <div class="col-md-6">
                     <h4>Emprendedores</h4>
-                    <!-- ELIMINADO: Formulario de filtro por tutor asignado -->
                     <div class="list-group">
                         {% for emprendedor in emprendedores %}
                         <div class="list-group-item">
@@ -91,9 +89,9 @@
                             <p class="mb-1">
                                 <strong>Usuario:</strong> {{ emprendedor.username }}<br>
                                 <strong>Email:</strong> {{ emprendedor.email }}<br>
-                                <strong>Tutor asignado:</strong> 
-                                {% if emprendedor.emprendedor_profile.tutor %}
-                                    {{ emprendedor.emprendedor_profile.tutor.usuario.get_full_name }}
+                                <strong>Gestor asignado:</strong> 
+                                {% if emprendedor.emprendedor_profile.gestor %}
+                                    {{ emprendedor.emprendedor_profile.gestor.usuario.get_full_name }}
                                 {% else %}
                                     Sin asignar
                                 {% endif %}
@@ -139,15 +137,15 @@
                         <small>Solicitado por: {{ proyecto.nombre_completo }}</small>
                         <div class="mt-2">
                             <strong>Gestor de Ciencias asignado:</strong> 
-                            {% if proyecto.tutor %}
-                                {{ proyecto.tutor.usuario.get_full_name }} ({{ proyecto.tutor.proyectos_actuales }}/{{ proyecto.tutor.max_proyectos }})
+                            {% if proyecto.gestor %}
+                                {{ proyecto.gestor.usuario.get_full_name }} ({{ proyecto.gestor.proyectos_actuales }}/{{ proyecto.gestor.max_proyectos }})
                             {% else %}
                                 Sin asignar
                             {% endif %}
                         </div>
-                        <!-- BOTÓN DE ASIGNAR TUTOR A PROYECTO -->
+                        <!-- BOTÓN DE ASIGNAR GESTOR A PROYECTO -->
                         <div class="mt-2">
-                            <a href="{% url 'asignar_tutor' proyecto.id %}" class="btn btn-sm btn-success">
+                            <a href="{% url 'asignar_gestor' proyecto.id %}" class="btn btn-sm btn-success">
                                 <i class="bi bi-person-plus"></i> Asignar Gestor de Ciencias
                             </a>
                         </div>
@@ -174,8 +172,8 @@
                         <label class="form-label">Enviar a:</label>
                         <div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="tipo_destinatario" id="tipo_tutor" value="tutor" checked>
-                                <label class="form-check-label" for="tipo_tutor">Gestor de Ciencias</label>
+                                <input class="form-check-input" type="radio" name="tipo_destinatario" id="tipo_gestor" value="gestor" checked>
+                                <label class="form-check-label" for="tipo_gestor">Gestor de Ciencias</label>
                             </div>
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="tipo_destinatario" id="tipo_emprendedor" value="emprendedor">
@@ -187,9 +185,9 @@
                         <label class="form-label">Seleccionar destinatario:</label>
                         <select class="form-select" id="destinatario_select" name="destinatario_id" required>
                             <option value="">-- Seleccione un destinatario --</option>
-                            <option value="" disabled>--- Gestor de Ciencias ---</option>
-                            {% for tutor in tutores %}
-                            <option value="{{ tutor.usuario.id }}" data-tipo="tutor">{{ tutor.usuario.get_full_name }}</option>
+                            <option value="" disabled>--- Gestores de Ciencias ---</option>
+                            {% for gestor in gestores %}
+                            <option value="{{ gestor.usuario.id }}" data-tipo="gestor">{{ gestor.usuario.get_full_name }}</option>
                             {% endfor %}
                             <option value="" disabled>--- Emprendedores ---</option>
                             {% for emprendedor in emprendedores %}
@@ -215,7 +213,7 @@
     </div>
 </div>
 
-<!-- Solicitudes de la Ventanilla Única -->
+<!-- Solicitudes de la Ventanilla Única (sin cambios, se conserva) -->
 <div class="container mt-4 mb-5">
     <div class="card shadow">
         <div class="card-header d-flex justify-content-between align-items-center" style="background:#003366; color:white;">
@@ -310,7 +308,7 @@
     </div>
 </div>
 
-<!-- Modales de detalle por solicitud -->
+<!-- Modales de detalle por solicitud (sin cambios, se conserva) -->
 {% for sol in solicitudes_ventanilla %}
 <div class="modal fade" id="verSolicitudModal{{ sol.id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">

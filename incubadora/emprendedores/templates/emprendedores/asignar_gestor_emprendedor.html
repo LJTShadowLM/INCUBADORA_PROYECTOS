@@ -6,29 +6,29 @@
         <div class="col-md-8">
             <div class="card shadow">
                 <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">Asignar Gestor de Ciencias a Proyecto</h3>
+                    <h3 class="mb-0">Asignar Gestor de Ciencias a Emprendedor</h3>
                 </div>
                 <div class="card-body">
-                    <h4>Proyecto: {{ proyecto.nombre_proyecto }}</h4>
-                    <p class="text-muted">Emprendedor: {{ proyecto.nombre_completo }}</p>
+                    <h4>Emprendedor: {{ emprendedor.get_full_name }}</h4>
+                    <p class="text-muted">Email: {{ emprendedor.email }}</p>
                     
                     <form method="post">
                         {% csrf_token %}
                         
                         <div class="mb-3">
                             <label class="form-label">Seleccionar gestor de ciencias:</label>
-                            <select name="tutor_id" class="form-select" required>
+                            <select name="gestor_id" class="form-select" required>
                                 <option value="">-- Seleccione un gestor de ciencias --</option>
-                                {% for tutor in tutores %}
-                                <option value="{{ tutor.id }}" 
-                                    {% if tutor.proyectos_actuales >= tutor.max_proyectos %}disabled{% endif %}>
-                                    {{ tutor.usuario.get_full_name }} ({{ tutor.especialidades }})
-                                    - Proyectos: {{ tutor.proyectos_actuales }}/{{ tutor.max_proyectos }}
-                                    {% if tutor.proyectos_actuales >= tutor.max_proyectos %} - LÍMITE ALCANZADO{% endif %}
+                                {% for gestor in gestores %}
+                                <option value="{{ gestor.id }}" 
+                                    {% if gestor.proyectos_actuales >= gestor.max_proyectos %}disabled{% endif %}>
+                                    {{ gestor.usuario.get_full_name }} ({{ gestor.especialidades }})
+                                    - Proyectos: {{ gestor.proyectos_actuales }}/{{ gestor.max_proyectos }}
+                                    {% if gestor.proyectos_actuales >= gestor.max_proyectos %} - LÍMITE ALCANZADO{% endif %}
                                 </option>
                                 {% endfor %}
                             </select>
-                            <div class="form-text">Solo se pueden seleccionar gestor de ciencias con disponibilidad</div>
+                            <div class="form-text">Solo se pueden seleccionar gestores con disponibilidad</div>
                         </div>
                         
                         <button type="submit" class="btn btn-success w-100 py-2">

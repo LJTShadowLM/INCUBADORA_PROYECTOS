@@ -1,0 +1,25 @@
+{% extends "emprendedores/base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white"><h4>Responder a la Sesión</h4></div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3"><label class="form-label">¿Aceptas la sesión?</label>
+                            <select name="accion" class="form-select">
+                                <option value="aceptar">Aceptar</option>
+                                <option value="rechazar">Rechazar</option>
+                            </select>
+                        </div>
+                        <div class="mb-3"><label class="form-label">Motivo (si rechazas)</label><textarea name="mensaje" class="form-control" rows="3"></textarea></div>
+                        <button type="submit" class="btn btn-primary">Enviar Respuesta</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -212,14 +212,14 @@
                         <select name="destinatario_id" class="form-select" id="select-destinatario" required>
                             <option value="">-- Seleccione --</option>
                             {% for proyecto in proyectos %}
-                                {% if proyecto.tutor %}
-                                <option value="{{ proyecto.tutor.usuario.id }}" data-tipo="tutor">
-                                    {{ proyecto.tutor.usuario.get_full_name }} (Gestor de Ciencias — {{ proyecto.nombre_proyecto }})
+                                {% if proyecto.gestor %}
+                                <option value="{{ proyecto.gestor.usuario.id }}" data-tipo="gestor">
+                                    {{ proyecto.gestor.usuario.get_full_name }} (Gestor de Ciencias — {{ proyecto.nombre_proyecto }})
                                 </option>
                                 {% endif %}
                             {% endfor %}
                         </select>
-                        <input type="hidden" name="tipo_destinatario" id="tipo-destinatario-hidden" value="tutor">
+                        <input type="hidden" name="tipo_destinatario" id="tipo-destinatario-hidden" value="gestor">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Asunto *</label>
@@ -334,7 +334,7 @@
             var opt = document.createElement('option');
             opt.value = destinatarioId;
             opt.text = nombre;
-            opt.setAttribute('data-tipo', 'tutor');
+            opt.setAttribute('data-tipo', 'gestor');
             select.appendChild(opt);
             select.value = destinatarioId;
         }

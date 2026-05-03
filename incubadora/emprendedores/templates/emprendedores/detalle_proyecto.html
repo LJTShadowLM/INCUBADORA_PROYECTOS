@@ -21,17 +21,16 @@
                     </span>
                 </div>
                 <div class="col-md-4 text-end">
-                    {% if request.user.tutor %}
-                        <a href="{% url 'panel_tutor' %}" class="btn btn-outline-secondary">
+                    {% if request.user.gestorciencias %}
+                        <a href="{% url 'panel_gestor' %}" class="btn btn-outline-secondary">
                     {% elif request.user.is_superuser %}
-                    <a href="{% url 'panel_admin' %}" class="btn btn-outline-secondary">
+                        <a href="{% url 'panel_admin' %}" class="btn btn-outline-secondary">
                     {% else %}
-                   <a href="{% url 'panel_emprendedor' %}" class="btn btn-outline-secondary">
-                   {% endif %}
-                <i class="bi bi-arrow-left"></i> Volver
-                  </a>
-                    
-                 </div>
+                        <a href="{% url 'panel_emprendedor' %}" class="btn btn-outline-secondary">
+                    {% endif %}
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </a>
+                </div>
             </div>
             
             <div class="mb-4">
@@ -90,15 +89,15 @@
                 </div>
             </div>
             
-            {% if proyecto.tutores.exists %}
+            {% if proyecto.gestor %}
             <div class="mt-4">
-                <h5>Tutor Asignado</h5>
+                <h5>Gestor de Ciencias asignado</h5>
                 <div class="card">
                     <div class="card-body">
-                        <h6>{{ proyecto.tutores.first }}</h6>
-                        <p class="mb-1"><strong>Especialidades:</strong> {{ proyecto.tutores.first.especialidades }}</p>
-                        <p class="mb-1"><strong>Experiencia:</strong> {{ proyecto.tutores.first.experiencia|truncatechars:200 }}</p>
-                        <p class="mb-0"><strong>Áreas de tutorización:</strong> {{ proyecto.tutores.first.areas_tutorizar }}</p>
+                        <h6>{{ proyecto.gestor.usuario.get_full_name }}</h6>
+                        <p class="mb-1"><strong>Especialidades:</strong> {{ proyecto.gestor.especialidades }}</p>
+                        <p class="mb-1"><strong>Experiencia:</strong> {{ proyecto.gestor.experiencia|truncatechars:200 }}</p>
+                        <p class="mb-0"><strong>Áreas de tutorización:</strong> {{ proyecto.gestor.areas_tutorizar }}</p>
                     </div>
                 </div>
             </div>

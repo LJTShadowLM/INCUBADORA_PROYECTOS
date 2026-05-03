@@ -18,14 +18,12 @@
         font-size: 0.85rem;
         padding: 2px 4px;
     }
-    /* Estilos para modales fijos */
     .modal-backdrop {
         z-index: 1040 !important;
     }
     .modal {
         z-index: 1050 !important;
     }
-    /* Estilo adicional para separar botones */
     .btn-action {
         margin-right: 4px;
         margin-bottom: 4px;
@@ -42,7 +40,7 @@
             <div class="card shadow mb-4">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="bi bi-speedometer2 me-2"></i>Resumen de Actividad</h5>
-                    <span class="badge bg-light text-dark">{{ tutor.proyectos_actuales }} Proyectos</span>
+                    <span class="badge bg-light text-dark">{{ gestor.proyectos_actuales }} Proyectos</span>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -50,7 +48,7 @@
                             <div class="card border-start border-success border-4">
                                 <div class="card-body">
                                     <h6 class="card-title text-muted">Proyectos</h6>
-                                    <h3 class="card-text">{{ tutor.proyectos_actuales }}</h3>
+                                    <h3 class="card-text">{{ gestor.proyectos_actuales }}</h3>
                                 </div>
                             </div>
                         </div>
@@ -124,9 +122,9 @@
                                                 <a href="{% url 'detalle_proyecto' proyecto.id %}" class="text-decoration-none">
                                                     <strong>{{ proyecto.nombre_proyecto }}</strong>
                                                 </a>
-                                            </td>
+                                            </a>
                                             <td>
-                                                <form method="post" action="{% url 'cambiar_estado_proyecto_tutor' proyecto.id %}" class="d-inline">
+                                                <form method="post" action="{% url 'cambiar_estado_proyecto_gestor' proyecto.id %}" class="d-inline">
                                                     {% csrf_token %}
                                                     <select name="nuevo_estado" class="form-select form-select-sm" onchange="this.form.submit()">
                                                         <option value="pendiente" {% if proyecto.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
@@ -135,7 +133,7 @@
                                                         <option value="finalizado" {% if proyecto.estado == 'finalizado' %}selected{% endif %}>Finalizado</option>
                                                     </select>
                                                 </form>
-                                            </td>
+                                            </a>
                                             <td>
                                                 <div class="d-flex align-items-center">
                                                     <div class="progress me-2" style="width: 100px; height: 10px;">
@@ -145,8 +143,8 @@
                                                     </div>
                                                     <span>{{ proyecto.progreso }}%</span>
                                                 </div>
-                                            </td>
-                                            <td>{{ proyecto.nombre_completo }}</td>
+                                            </a>
+                                            <td>{{ proyecto.nombre_completo }}</a>
                                             <td>
                                                 <div class="d-flex flex-wrap">
                                                     <a href="{% url 'detalle_proyecto' proyecto.id %}" 
@@ -163,16 +161,13 @@
                                                             data-bs-toggle="modal" data-bs-target="#sesionModal{{ proyecto.id }}">
                                                         <i class="bi bi-calendar-plus"></i> Sesión
                                                     </button>
-                                                    <button class="btn btn-sm btn-outline-info btn-action" data-bs-toggle="modal" data-bs-target="#eventoModal{{ proyecto.id }}">
-                                                        <i class="bi bi-calendar-plus"></i> Evento
-                                                    </button>
                                                     <!-- Botón de Rechazar Proyecto -->
-                                                    <button class="btn btn-sm btn-outline-danger btn-action" data-bs-toggle="modal" data-bs-target="#rechazoModal{{ proyecto.id }}">
+                                                    <button class="btn btn-sm btn-outline-danger btn-action" data-bs-toggle="modal" data-bs-target="#rechazoModal{{ projeto.id }}">
                                                         <i class="bi bi-x-circle"></i> Rechazar
                                                     </button>
                                                 </div>
-                                            </td>
-                                        </tr>
+                                            </a>
+                                        </a>
                                         {% endfor %}
                                     </tbody>
                                 </table>
@@ -221,21 +216,36 @@
                                 <a href="{% url 'detalle_sesion' sesion.id %}" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-eye"></i> Ver detalles
                                 </a>
-                                {% if sesion.estado != 'reprogramacion_solicitada' %}
+                                {% if sesion.estado == 'confirmada' and sesion.contador_reprogramaciones == 0 %}
                                 <button type="button" class="btn btn-sm btn-outline-warning"
                                         data-bs-toggle="modal" data-bs-target="#posponerModal{{ sesion.id }}">
                                     <i class="bi bi-calendar-event"></i> Posponer
                                 </button>
-                                {% else %}
+                                {% elif sesion.estado == 'reprogramacion_solicitada' %}
                                 <button type="button" class="btn btn-sm btn-outline-warning" disabled
                                         title="Esta sesión ya fue reagendada una vez">
                                     <i class="bi bi-calendar-event"></i> Posponer
                                 </button>
                                 {% endif %}
+
+                                <!-- Botón Marcar como Realizada (solo si la fecha ya pasó) -->
+                                {% now "U" as current_timestamp %}
+                                {% if sesion.estado == 'confirmada' and sesion.fecha_propuesta|date:"U" < current_timestamp %}
+                                <form method="post" action="{% url 'marcar_sesion_realizada' sesion.id %}" 
+                                      onsubmit="return confirm('¿Está seguro de marcar esta sesión como realizada?');" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-success">
+                                        <i class="bi bi-check-circle"></i> Realizada
+                                    </button>
+                                </form>
+                                {% endif %}
+
+                                {% if sesion.estado != 'realizada' and sesion.estado != 'cancelada' %}
                                 <button type="button" class="btn btn-sm btn-outline-danger"
                                         data-bs-toggle="modal" data-bs-target="#cancelarSesionModal{{ sesion.id }}">
                                     <i class="bi bi-x-circle"></i> Cancelar
                                 </button>
+                                {% endif %}
                             </div>
                         </div>
                         {% empty %}
@@ -355,8 +365,9 @@
     </div>
 </div>
 
-<!-- Modal para agendar sesión (UNO POR PROYECTO) -->
+<!-- Modales -->
 {% for proyecto in proyectos %}
+<!-- Modal para agendar sesión -->
 <div class="modal fade" id="sesionModal{{ proyecto.id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -425,10 +436,8 @@
         </div>
     </div>
 </div>
-{% endfor %}
 
-<!-- Modal para enviar mensajes (UNO POR PROYECTO) -->
-{% for proyecto in proyectos %}
+<!-- Modal para enviar mensajes -->
 <div class="modal fade" id="mensajeModal{{ proyecto.id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -462,10 +471,8 @@
         </div>
     </div>
 </div>
-{% endfor %}
 
-<!-- Modal para rechazar proyecto (UNO POR PROYECTO) -->
-{% for proyecto in proyectos %}
+<!-- Modal para rechazar proyecto -->
 <div class="modal fade" id="rechazoModal{{ proyecto.id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -498,7 +505,7 @@
 </div>
 {% endfor %}
 
-<!-- Modal para enviar mensaje al administrador (SOLO UNO) -->
+<!-- Modal para enviar mensaje al administrador (único) -->
 <div class="modal fade" id="mensajeAdminModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -509,7 +516,7 @@
             <form method="post" action="{% url 'enviar_mensaje' %}">
                 {% csrf_token %}
                 <input type="hidden" name="tipo_destinatario" value="administrador">
-                <input type="hidden" name="destinatario_id" value="1"> <!-- Asumiendo que el admin tiene ID 1 -->
+                <input type="hidden" name="destinatario_id" value="1">
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Para:</label>
@@ -535,7 +542,7 @@
 
 <!-- Botones flotantes -->
 <div class="position-fixed bottom-0 end-0 p-3 d-flex flex-column gap-2 align-items-end">
-    <a href="{% url 'bandeja_tutor' %}" class="btn btn-success btn-lg rounded-circle" title="Ir a la Bandeja">
+    <a href="{% url 'bandeja_gestor' %}" class="btn btn-success btn-lg rounded-circle" title="Ir a la Bandeja">
         <i class="bi bi-inbox"></i>
     </a>
     <button type="button" class="btn btn-primary btn-lg rounded-circle" data-bs-toggle="modal" data-bs-target="#mensajeAdminModal" title="Enviar mensaje al administrador">
@@ -551,7 +558,7 @@
                 <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Nueva Tarea</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form method="post" action="{% url 'crear_tarea_tutor' %}">
+            <form method="post" action="{% url 'crear_tarea_gestor' %}">
                 {% csrf_token %}
                 <div class="modal-body">
                     <div class="mb-3">
@@ -637,8 +644,6 @@
         calendar.render();
     });
 
-    // Lee el token CSRF desde la cookie que Django siempre pone en el navegador.
-    // Es más confiable que {{ csrf_token }} dentro de JS.
     function getCookie(name) {
         var cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -655,8 +660,6 @@
     }
 
     function marcarTareaCompletada(tareaId) {
-        // Usamos FormData para enviar el CSRF token en el cuerpo del POST,
-        // que es la forma más compatible con Django.
         var formData = new FormData();
         formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
 
@@ -665,9 +668,7 @@
             body: formData
         })
         .then(function(response) {
-            if (!response.ok) {
-                throw new Error('HTTP error: ' + response.status);
-            }
+            if (!response.ok) throw new Error('HTTP error: ' + response.status);
             return response.json();
         })
         .then(function(data) {
@@ -686,7 +687,6 @@
             if (data.completada) {
                 var titulo = item.getAttribute('data-titulo');
                 var proyecto = item.getAttribute('data-proyecto');
-
                 item.remove();
 
                 var sinCompletadas = document.getElementById('sin-completadas');
@@ -697,7 +697,7 @@
                 nuevoItem.id = 'tarea-item-' + tareaId;
                 nuevoItem.setAttribute('data-titulo', titulo);
                 nuevoItem.setAttribute('data-proyecto', proyecto);
-                nuevoItem.innerHTML =
+                nuevoItem.innerHTML = 
                     '<div class="form-check">' +
                         '<input class="form-check-input" type="checkbox" id="task' + tareaId + '"' +
                                ' onchange="marcarTareaCompletada(' + tareaId + ')" checked>' +
@@ -723,7 +723,6 @@
                     msg.textContent = 'No hay tareas pendientes';
                     listaPendientes.appendChild(msg);
                 }
-
             } else {
                 item.remove();
                 completadas -= 1;
@@ -742,13 +741,12 @@
         })
         .catch(function(error) {
             console.error('Error al marcar tarea:', error);
-            // Si falla, recarga la página para que el estado sea consistente
             location.reload();
         });
     }
 </script>
 
-<!-- Modales Posponer y Cancelar Sesión -->
+<!-- Modales Posponer y Cancelar Sesión (por cada sesión próxima) -->
 {% for sesion in sesiones_proximas %}
 <div class="modal fade" id="posponerModal{{ sesion.id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
@@ -760,13 +758,11 @@
             <form method="post" action="{% url 'proponer_horarios' sesion.id %}">
                 {% csrf_token %}
                 <div class="modal-body">
-                    <p class="text-muted mb-1">
-                        <i class="bi bi-folder2 me-1"></i>{{ sesion.proyecto.nombre_proyecto }}
-                    </p>
+                    <p class="text-muted mb-1"><i class="bi bi-folder2 me-1"></i>{{ sesion.proyecto.nombre_proyecto }}</p>
                     <p class="text-muted">Fecha actual: <strong>{{ sesion.fecha_propuesta|date:"d/m/Y H:i" }}</strong></p>
                     <div class="mb-3">
                         <label class="form-label">Nueva fecha y hora * <small class="text-muted">(debe ser posterior a la fecha actual)</small></label>
-                        <input type="datetime-local" name="fecha_propuesta_1" class="form-control" required
+                        <input type="datetime-local" name="fecha_propuesta" class="form-control" required
                                min="{{ sesion.fecha_propuesta|date:'Y-m-d' }}T{{ sesion.fecha_propuesta|date:'H:i' }}">
                     </div>
                     <div class="mb-3">
@@ -775,15 +771,12 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Motivo del cambio *</label>
-                        <textarea name="mensaje" class="form-control" rows="3" required
-                                  placeholder="Explique el motivo por el que pospone esta sesión..."></textarea>
+                        <textarea name="mensaje" class="form-control" rows="3" required></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-warning">
-                        <i class="bi bi-send me-1"></i> Enviar Propuesta
-                    </button>
+                    <button type="submit" class="btn btn-warning">Enviar Propuesta</button>
                 </div>
             </form>
         </div>
@@ -797,29 +790,16 @@
                 <h5 class="modal-title"><i class="bi bi-x-circle me-2"></i>Cancelar Sesión</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form method="post" action="{% url 'responder_sesion' sesion.id %}">
+            <form method="post" action="{% url 'cancelar_sesion' sesion.id %}">
                 {% csrf_token %}
-                <input type="hidden" name="accion" value="rechazar">
                 <div class="modal-body">
-                    <p class="text-muted">
-                        <i class="bi bi-folder2 me-1"></i>{{ sesion.proyecto.nombre_proyecto }} —
-                        {{ sesion.fecha_propuesta|date:"d/m/Y H:i" }}
-                    </p>
-                    <div class="alert alert-warning">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                        Se notificará al emprendedor automáticamente.
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Motivo de la cancelación *</label>
-                        <textarea name="mensaje" class="form-control" rows="3" required
-                                  placeholder="Explique el motivo de la cancelación..."></textarea>
-                    </div>
+                    <p class="text-muted"><i class="bi bi-folder2 me-1"></i>{{ sesion.proyecto.nombre_proyecto }} — {{ sesion.fecha_propuesta|date:"d/m/Y H:i" }}</p>
+                    <div class="alert alert-warning"><i class="bi bi-exclamation-triangle-fill me-2"></i> Se notificará a la otra parte automáticamente.</div>
+                    <div class="mb-3"><label class="form-label">Motivo de la cancelación *</label><textarea name="motivo" class="form-control" rows="3" required></textarea></div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Volver</button>
-                    <button type="submit" class="btn btn-danger">
-                        <i class="bi bi-x-circle me-1"></i> Confirmar Cancelación
-                    </button>
+                    <button type="submit" class="btn btn-danger">Confirmar Cancelación</button>
                 </div>
             </form>
         </div>

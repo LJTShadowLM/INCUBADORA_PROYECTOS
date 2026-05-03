@@ -42,9 +42,9 @@
                         <strong>Fecha de registro:</strong> {{ proyecto.fecha_registro|date:"d/m/Y" }}
                     </div>
                     
-                    {% if proyecto.tutor %}
+                    {% if proyecto.gestor %}
                     <div class="mb-2">
-                        <strong>Gestor de Ciencias asignado:</strong> {{ proyecto.tutor.usuario.get_full_name }}
+                        <strong>Gestor de Ciencias asignado:</strong> {{ proyecto.gestor.usuario.get_full_name }}
                     </div>
                     {% endif %}
                     
@@ -53,7 +53,7 @@
                             Ver Detalles
                         </a>
                         
-                        {% if proyecto.tutor %}
+                        {% if proyecto.gestor %}
                         <button class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#mensajeModal{{ proyecto.id }}">
                             <i class="bi bi-chat"></i> Mensaje al Gestor de Ciencias
                         </button>
@@ -63,8 +63,8 @@
             </div>
         </div>
 
-        <!-- Modal de enviar mensaje al tutor -->
-        {% if proyecto.tutor %}
+        <!-- Modal de enviar mensaje al gestor -->
+        {% if proyecto.gestor %}
         <div class="modal fade" id="mensajeModal{{ proyecto.id }}" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -74,12 +74,12 @@
                     </div>
                     <form method="post" action="{% url 'enviar_mensaje' %}">
                         {% csrf_token %}
-                        <input type="hidden" name="tipo_destinatario" value="tutor">
-                        <input type="hidden" name="destinatario_id" value="{{ proyecto.tutor.usuario.id }}">
+                        <input type="hidden" name="tipo_destinatario" value="gestor">
+                        <input type="hidden" name="destinatario_id" value="{{ proyecto.gestor.usuario.id }}">
                         <div class="modal-body">
                             <div class="mb-3">
                                 <label class="form-label">Para:</label>
-                                <p class="form-control-plaintext fw-bold">{{ proyecto.tutor.usuario.get_full_name }}</p>
+                                <p class="form-control-plaintext fw-bold">{{ proyecto.gestor.usuario.get_full_name }}</p>
                             </div>
                             <div class="mb-3">
                                 <label for="asunto{{ proyecto.id }}" class="form-label">Asunto</label>
