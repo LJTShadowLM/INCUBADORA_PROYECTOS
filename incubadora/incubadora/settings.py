@@ -98,7 +98,9 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files
+DEBUG = True
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 # Default primary key field type
@@ -111,6 +113,12 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'liajay357@gmail.com'
 EMAIL_HOST_PASSWORD = 'Alonelotto'
 DEFAULT_FROM_EMAIL = 'incubadora@desoft.cu'
+
+# Session security settings
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_AGE = 1800
 
 AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
 

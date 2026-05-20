@@ -130,7 +130,7 @@ def login_view(request):
             
             if user.is_superuser:
                 return redirect('panel_admin')
-            elif hasattr(user, 'gestorciencias'):  # Atributo inverso de GestorCiencias
+            elif hasattr(user, 'gestorciencias'):
                 return redirect('panel_gestor')
             else:
                 return redirect('panel_emprendedor')

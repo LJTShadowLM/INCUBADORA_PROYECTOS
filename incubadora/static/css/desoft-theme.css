@@ -1,0 +1,275 @@
+
+/* VARIABLES DE COLOR */
+:root {
+    /* Colores corporativos DESOFT */
+    --color-desoft-azul: #00838F;           /* RGB: 0, 131, 143 */
+    --color-desoft-azul-hover: #006978;     /* Versión más oscura para hover */
+    --color-desoft-azul-claro: #26a69a;     /* Versión más clara */
+    --color-desoft-naranja: #F57C00;        /* RGB: 245, 124, 0 */
+    --color-desoft-naranja-hover: #E65100;  /* Versión más oscura para hover */
+    
+    /* Colores de estado (mantienen coherencia con azul verdoso) */
+    --color-exito: #00897b;         /* Verde azulado */
+    --color-peligro: #d32f2f;       /* Rojo */
+    --color-advertencia: #ffa726;   /* Naranja claro */
+    --color-info: #00838F;          /* Azul verdoso (mismo que principal) */
+    
+    /* Colores de fondo */
+    --fondo-claro: #f5f5f5;
+    --fondo-card: #ffffff;
+    --texto-principal: #212121;
+    --texto-secundario: #757575;
+}
+
+/* =====================================================
+   SOBRESCRIBIR COLORES DE BOOTSTRAP
+   ===================================================== */
+
+/* Color primario = Azul verdoso DESOFT */
+.bg-primary {
+    background-color: var(--color-desoft-azul) !important;
+}
+
+.text-primary {
+    color: var(--color-desoft-azul) !important;
+}
+
+.btn-primary {
+    background-color: var(--color-desoft-azul) !important;
+    border-color: var(--color-desoft-azul) !important;
+    color: #ffffff !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    background-color: var(--color-desoft-azul-hover) !important;
+    border-color: var(--color-desoft-azul-hover) !important;
+    color: #ffffff !important;
+}
+
+.btn-outline-primary {
+    color: var(--color-desoft-azul) !important;
+    border-color: var(--color-desoft-azul) !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--color-desoft-azul) !important;
+    border-color: var(--color-desoft-azul) !important;
+    color: #ffffff !important;
+}
+
+/* Color de éxito = Verde azulado */
+.bg-success {
+    background-color: var(--color-exito) !important;
+}
+
+.btn-success {
+    background-color: var(--color-exito) !important;
+    border-color: var(--color-exito) !important;
+}
+
+.btn-success:hover {
+    background-color: #00796b !important;
+    border-color: #00796b !important;
+}
+
+/* Color de información = Azul verdoso */
+.bg-info {
+    background-color: var(--color-desoft-azul-claro) !important;
+}
+
+.btn-info {
+    background-color: var(--color-desoft-azul-claro) !important;
+    border-color: var(--color-desoft-azul-claro) !important;
+}
+
+/* =====================================================
+   BOTÓN VENTANILLA ÚNICA - NARANJA CORPORATIVO
+   ===================================================== */
+
+.btn-ventanilla,
+.btn-ventanilla-unica {
+    background-color: var(--color-desoft-naranja) !important;
+    border-color: var(--color-desoft-naranja) !important;
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+.btn-ventanilla:hover,
+.btn-ventanilla:focus,
+.btn-ventanilla:active,
+.btn-ventanilla-unica:hover,
+.btn-ventanilla-unica:focus,
+.btn-ventanilla-unica:active {
+    background-color: var(--color-desoft-naranja-hover) !important;
+    border-color: var(--color-desoft-naranja-hover) !important;
+    color: #ffffff !important;
+}
+
+/* =====================================================
+   COMPONENTES ESPECÍFICOS
+   ===================================================== */
+
+/* Navbar / Barra de navegación */
+.navbar {
+    background-color: var(--color-desoft-azul) !important;
+}
+
+.navbar-brand,
+.navbar-nav .nav-link {
+    color: #ffffff !important;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #e0f2f1 !important;
+}
+
+/* Headers de tarjetas */
+.card-header.bg-primary {
+    background-color: var(--color-desoft-azul) !important;
+    color: #ffffff !important;
+}
+
+.card-header.bg-success {
+    background-color: var(--color-exito) !important;
+}
+
+.card-header.bg-info {
+    background-color: var(--color-desoft-azul-claro) !important;
+}
+
+/* Badges / Etiquetas */
+.badge.bg-primary {
+    background-color: var(--color-desoft-azul) !important;
+}
+
+.badge.bg-success {
+    background-color: var(--color-exito) !important;
+}
+
+.badge.bg-info {
+    background-color: var(--color-desoft-azul-claro) !important;
+}
+
+/* Enlaces */
+a {
+    color: var(--color-desoft-azul);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--color-desoft-azul-hover);
+    text-decoration: underline;
+}
+
+/* Formularios */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--color-desoft-azul);
+    box-shadow: 0 0 0 0.25rem rgba(0, 131, 143, 0.25);
+}
+
+/* Progress bars */
+.progress-bar {
+    background-color: var(--color-desoft-azul) !important;
+}
+
+.progress-bar.bg-success {
+    background-color: var(--color-exito) !important;
+}
+
+/* Bordes de color */
+.border-primary {
+    border-color: var(--color-desoft-azul) !important;
+}
+
+.border-success {
+    border-color: var(--color-exito) !important;
+}
+
+/* =====================================================
+   ESTADOS DE PROYECTO (mantienen azul verdoso)
+   ===================================================== */
+
+.estado-pendiente {
+    color: #757575;
+}
+
+.estado-revision {
+    color: var(--color-desoft-azul-claro);
+}
+
+.estado-aceptado,
+.estado-asignado {
+    color: var(--color-desoft-azul);
+}
+
+.estado-finalizado {
+    color: var(--color-exito);
+}
+
+.estado-rechazado {
+    color: var(--color-peligro);
+}
+
+/* =====================================================
+   BOTONES FLOTANTES
+   ===================================================== */
+
+.btn-lg.rounded-circle {
+    box-shadow: 0 4px 6px rgba(0, 131, 143, 0.3);
+}
+
+.btn-lg.rounded-circle:hover {
+    box-shadow: 0 6px 10px rgba(0, 131, 143, 0.4);
+}
+
+/* =====================================================
+   TABLAS
+   ===================================================== */
+
+.table thead {
+    background-color: #e0f2f1;
+    color: var(--texto-principal);
+}
+
+.table-hover tbody tr:hover {
+    background-color: #e0f2f1;
+}
+
+/* =====================================================
+   CALENDARIO (FullCalendar)
+   ===================================================== */
+
+.fc .fc-button-primary {
+    background-color: var(--color-desoft-azul) !important;
+    border-color: var(--color-desoft-azul) !important;
+}
+
+.fc .fc-button-primary:hover {
+    background-color: var(--color-desoft-azul-hover) !important;
+    border-color: var(--color-desoft-azul-hover) !important;
+}
+
+.fc-event {
+    background-color: var(--color-desoft-azul) !important;
+    border-color: var(--color-desoft-azul-hover) !important;
+}
+
+/* =====================================================
+   ALERTAS
+   ===================================================== */
+
+.alert-primary {
+    background-color: #e0f2f1;
+    border-color: var(--color-desoft-azul-claro);
+    color: var(--color-desoft-azul-hover);
+}
+
+.alert-success {
+    background-color: #e0f2f1;
+    border-color: var(--color-exito);
+    color: #004d40;
+}
+

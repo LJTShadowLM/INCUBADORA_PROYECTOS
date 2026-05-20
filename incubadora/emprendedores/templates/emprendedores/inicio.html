@@ -3,7 +3,7 @@
 
 {% block content %}
 <!-- Hero Section con imagen de fondo y overlay -->
-<section class="hero-section" style="background: linear-gradient(rgba(0, 40, 80, 0.75), rgba(0, 102, 204, 0.75)), url('{% static 'img/tech-bg.png' %}') center/cover no-repeat; color: white; padding: 5rem 0; text-align: center;">
+<section class="hero-section" style="background: linear-gradient(rgba(0, 131, 143, 0.7), rgba(0, 131, 143, 0.85)), url('{% static 'img/tech-bg.png' %}') center/cover no-repeat; color: white; padding: 5rem 0; text-align: center;">
     <div class="container">
         <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Impulsando Innovación Tecnológica en Santiago de Cuba</h1>
         <p class="lead" style="font-size: 1.25rem; max-width: 700px; margin: 0 auto 2rem;">
@@ -25,8 +25,7 @@
             <a href="{% url 'forum_evento' %}" class="btn btn-outline-light btn-lg" style="font-weight: bold; padding: 0.75rem 2rem;">
                 Forum Evento de Ciencias Técnicas e Innovación
             </a>
-            <a href="{% url 'ventanilla_unica' %}" class="btn btn-lg fw-bold" 
-               style="background:#00b4d8; color:white; padding: 0.75rem 2rem;">
+            <a href="{% url 'ventanilla_unica' %}" class="btn btn-ventanilla btn-lg fw-bold" style="padding: 0.75rem 2rem;">
                 <i class="bi bi-building me-2"></i>Ventanilla Única
             </a>
         </div>
@@ -46,7 +45,7 @@
                     <div class="row g-4">
                         <div class="col-md-4">
                             <div class="card h-100 border-0 shadow-lg bg-dark bg-opacity-75 text-white" style="border-radius: 15px; backdrop-filter: blur(4px); transition: transform 0.3s;">
-                                <div class="card-header border-0" style="background: #0066cc; border-radius: 15px 15px 0 0;">
+                                <div class="card-header border-0 bg-primary" style="border-radius: 15px 15px 0 0;">
                                     <h5 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Pre-Seed (Idea)</h5>
                                 </div>
                                 <div class="card-body">
@@ -56,7 +55,7 @@
                         </div>
                         <div class="col-md-4">
                             <div class="card h-100 border-0 shadow-lg bg-dark bg-opacity-75 text-white" style="border-radius: 15px; backdrop-filter: blur(4px); transition: transform 0.3s;">
-                                <div class="card-header border-0" style="background: #0066cc; border-radius: 15px 15px 0 0;">
+                                <div class="card-header border-0 bg-primary" style="border-radius: 15px 15px 0 0;">
                                     <h5 class="mb-0"><i class="bi bi-tree me-2"></i>Seed (Semilla)</h5>
                                 </div>
                                 <div class="card-body">
@@ -66,7 +65,7 @@
                         </div>
                         <div class="col-md-4">
                             <div class="card h-100 border-0 shadow-lg bg-dark bg-opacity-75 text-white" style="border-radius: 15px; backdrop-filter: blur(4px); transition: transform 0.3s;">
-                                <div class="card-header border-0" style="background: #0066cc; border-radius: 15px 15px 0 0;">
+                                <div class="card-header border-0 bg-primary" style="border-radius: 15px 15px 0 0;">
                                     <h5 class="mb-0"><i class="bi bi-rocket-takeoff me-2"></i>Early Stage</h5>
                                 </div>
                                 <div class="card-body">
@@ -81,7 +80,7 @@
                     <div class="row g-4">
                         <div class="col-md-4">
                             <div class="card h-100 border-0 shadow-lg bg-dark bg-opacity-75 text-white" style="border-radius: 15px; backdrop-filter: blur(4px); transition: transform 0.3s;">
-                                <div class="card-header border-0" style="background: #0066cc; border-radius: 15px 15px 0 0;">
+                                <div class="card-header border-0 bg-primary" style="border-radius: 15px 15px 0 0;">
                                     <h5 class="mb-0"><i class="bi bi-graph-up-arrow me-2"></i>Growth Stage</h5>
                                 </div>
                                 <div class="card-body">
@@ -91,7 +90,7 @@
                         </div>
                         <div class="col-md-4">
                             <div class="card h-100 border-0 shadow-lg bg-dark bg-opacity-75 text-white" style="border-radius: 15px; backdrop-filter: blur(4px); transition: transform 0.3s;">
-                                <div class="card-header border-0" style="background: #0066cc; border-radius: 15px 15px 0 0;">
+                                <div class="card-header border-0 bg-primary" style="border-radius: 15px 15px 0 0;">
                                     <h5 class="mb-0"><i class="bi bi-globe2 me-2"></i>Expansión</h5>
                                 </div>
                                 <div class="card-body">
@@ -101,7 +100,7 @@
                         </div>
                         <div class="col-md-4">
                             <div class="card h-100 border-0 shadow-lg bg-dark bg-opacity-75 text-white" style="border-radius: 15px; backdrop-filter: blur(4px); transition: transform 0.3s;">
-                                <div class="card-header border-0" style="background: #0066cc; border-radius: 15px 15px 0 0;">
+                                <div class="card-header border-0 bg-primary" style="border-radius: 15px 15px 0 0;">
                                     <h5 class="mb-0"><i class="bi bi-flag me-2"></i>Exit (Salida)</h5>
                                 </div>
                                 <div class="card-body">
@@ -114,17 +113,17 @@
             </div>
             <!-- Controles del carrusel -->
             <button class="carousel-control-prev" type="button" data-bs-target="#carouselFases" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true" style="background-color: #0066cc; border-radius: 50%; padding: 20px;"></span>
+                <span class="carousel-control-prev-icon" aria-hidden="true" style="border-radius: 50%; padding: 20px;"></span>
                 <span class="visually-hidden">Anterior</span>
             </button>
             <button class="carousel-control-next" type="button" data-bs-target="#carouselFases" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true" style="background-color: #0066cc; border-radius: 50%; padding: 20px;"></span>
+                <span class="carousel-control-next-icon" aria-hidden="true" style="border-radius: 50%; padding: 20px;"></span>
                 <span class="visually-hidden">Siguiente</span>
             </button>
             <!-- Indicadores -->
             <div class="carousel-indicators" style="bottom: -40px;">
-                <button type="button" data-bs-target="#carouselFases" data-bs-slide-to="0" class="active" style="background-color: white;"></button>
-                <button type="button" data-bs-target="#carouselFases" data-bs-slide-to="1" style="background-color: white;"></button>
+                <button type="button" data-bs-target="#carouselFases" data-bs-slide-to="0" class="active"></button>
+                <button type="button" data-bs-target="#carouselFases" data-bs-slide-to="1"></button>
             </div>
         </div>
     </div>
@@ -140,7 +139,7 @@
             {% for proyecto in proyectos_destacados %}
             <div class="col-md-6 col-lg-3">
                 <div class="card h-100 border-0 shadow-lg bg-dark bg-opacity-75 text-white project-card" style="border-radius: 20px; backdrop-filter: blur(4px); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
-                    <div class="card-header border-0 d-flex justify-content-between align-items-center" style="background: rgba(0,102,204,0.9); border-radius: 20px 20px 0 0;">
+                    <div class="card-header border-0 d-flex justify-content-between align-items-center bg-primary bg-opacity-75" style="border-radius: 20px 20px 0 0;">
                         <h5 class="mb-0 fw-bold">{{ proyecto.nombre_proyecto|truncatechars:25 }}</h5>
                         <span class="badge 
                             {% if proyecto.estado == 'asignado' %}bg-warning text-dark
@@ -209,35 +208,35 @@
     </div>
 </section>
 
-<!-- Footer sin cambios -->
-<footer style="background: #002244; color: #adb5bd; padding: 3rem 0 1.5rem;">
+<!-- Footer -->
+<footer class="bg-primary text-white py-5">
     <div class="container">
         <div class="row g-4 mb-4">
             <div class="col-md-4">
-                <h6 class="text-white fw-bold mb-3">
+                <h6 class="fw-bold mb-3">
                     <i class="bi bi-lightbulb me-2"></i>Incubadora Desoft
                 </h6>
                 <p style="font-size: 0.9rem;">Plataforma Integral de Incubación de Proyectos Tecnológicos de Desoft Santiago de Cuba.</p>
             </div>
             <div class="col-md-4">
-                <h6 class="text-white fw-bold mb-3">Contacto</h6>
+                <h6 class="fw-bold mb-3">Contacto</h6>
                 <p style="font-size:0.9rem;" class="mb-1"><i class="bi bi-geo-alt me-2"></i>Santiago de Cuba, Cuba</p>
                 <p style="font-size:0.9rem;" class="mb-1"><i class="bi bi-telephone me-2"></i>(+53) 22 XXXXXX</p>
                 <p style="font-size:0.9rem;" class="mb-0"><i class="bi bi-envelope me-2"></i>incubadora@desoft.cu</p>
             </div>
             <div class="col-md-4">
-                <h6 class="text-white fw-bold mb-3">Accesos rápidos</h6>
+                <h6 class="fw-bold mb-3">Accesos rápidos</h6>
                 <ul class="list-unstyled" style="font-size:0.9rem;">
-                    <li class="mb-1"><a href="{% url 'ventanilla_unica' %}" class="text-decoration-none" style="color:#adb5bd;">Ventanilla Única</a></li>
-                    <li class="mb-1"><a href="{% url 'forum_evento' %}" class="text-decoration-none" style="color:#adb5bd;">Forum Evento</a></li>
-                    <li class="mb-1"><a href="{% url 'login' %}" class="text-decoration-none" style="color:#adb5bd;">Iniciar Sesión</a></li>
+                    <li class="mb-1"><a href="{% url 'ventanilla_unica' %}" class="text-white-50 text-decoration-none">Ventanilla Única</a></li>
+                    <li class="mb-1"><a href="{% url 'forum_evento' %}" class="text-white-50 text-decoration-none">Forum Evento</a></li>
+                    <li class="mb-1"><a href="{% url 'login' %}" class="text-white-50 text-decoration-none">Iniciar Sesión</a></li>
                 </ul>
             </div>
         </div>
-        <hr style="border-color: #334466;">
+        <hr style="border-color: rgba(255,255,255,0.2);">
         <p class="text-center mb-0" style="font-size:0.85rem;">
             &copy; 2026 Desoft — Empresa de Tecnologías de la Información. Santiago de Cuba. Todos los derechos reservados.
-            <span class="ms-2 text-muted">COR-DSF-2026-STC</span>
+            <span class="ms-2 text-white-50">COR-DSF-2026-STC</span>
         </p>
     </div>
 </footer>

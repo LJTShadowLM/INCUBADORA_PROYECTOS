@@ -14,7 +14,11 @@ class SesionMentoriaForm(forms.ModelForm):
             'enlace_virtual', 'direccion_presencial'
         ]
         widgets = {
-            'fecha_propuesta': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+            'fecha_propuesta': forms.DateTimeInput(attrs={
+                'type': 'datetime-local', 
+                'class': 'form-control',
+                'required': True
+            }),
             'duracion': forms.NumberInput(attrs={'class': 'form-control', 'min': '15', 'step': '15'}),
             'formato': forms.Select(attrs={'class': 'form-control'}),
             'tipo': forms.Select(attrs={'class': 'form-control'}),
@@ -30,7 +34,7 @@ class SesionMentoriaForm(forms.ModelForm):
             'formato': 'Formato de la sesión',
             'tipo': 'Tipo de sesión',
             'objetivo': 'Objetivo de la sesión',
-            'agenda': 'Agenda or temas a tratar',
+            'agenda': 'Agenda o temas a tratar',
             'materiales_requeridos': 'Materiales requeridos',
             'es_material_obligatorio': '¿Es obligatorio entregar estos materiales antes de la sesión?',
             'enlace_virtual': 'Enlace para sesión virtual',
@@ -48,25 +52,46 @@ class SesionMentoriaForm(forms.ModelForm):
         self.fields['tipo'].initial = 'seguimiento'
 
     def clean_fecha_propuesta(self):
+        """Validación: La fecha de la sesión no puede ser en el pasado"""
         fecha_propuesta = self.cleaned_data.get('fecha_propuesta')
-        if fecha_propuesta and fecha_propuesta < timezone.now():
-            raise ValidationError("La fecha y hora propuesta no puede ser en el pasado.")
+        
+        if not fecha_propuesta:
+            raise ValidationError("La fecha y hora de la sesión es obligatoria.")
+        
+        # Obtener fecha/hora actual
+        ahora = timezone.now()
+        
+        # Validar que la fecha sea futura
+        if fecha_propuesta <= ahora:
+            fecha_actual_formateada = ahora.strftime("%d/%m/%Y %H:%M")
+            fecha_ingresada_formateada = fecha_propuesta.strftime("%d/%m/%Y %H:%M")
+            raise ValidationError(
+                f"No se puede agendar una sesión en el pasado. "
+                f"Fecha actual: {fecha_actual_formateada}. "
+                f"Fecha ingresada: {fecha_ingresada_formateada}. "
+                f"Por favor, seleccione una fecha y hora futura."
+            )
+        
         return fecha_propuesta
 
     def clean(self):
+        """Validaciones adicionales: formato y ubicación"""
         cleaned_data = super().clean()
         formato = cleaned_data.get('formato')
         enlace_virtual = cleaned_data.get('enlace_virtual')
         direccion_presencial = cleaned_data.get('direccion_presencial')
         
+        # Validar que se proporcione enlace para sesiones virtuales
         if formato == 'virtual' and not enlace_virtual:
-            self.add_error('enlace_virtual', 'Debe proporcionar un enlace para sesiones virtuales.')
+            self.add_error('enlace_virtual', 
+                          'Debe proporcionar un enlace para sesiones virtuales (Ej: Zoom, Google Meet).')
         
+        # Validar que se proporcione dirección para sesiones presenciales
         if formato == 'presencial' and not direccion_presencial:
-            self.add_error('direccion_presencial', 'Debe proporcionar una dirección para sesiones presenciales.')
+            self.add_error('direccion_presencial', 
+                          'Debe proporcionar una dirección para sesiones presenciales.')
         
         return cleaned_data
-
     def save(self, commit=True):
         instance = super().save(commit=False)
         if self.proyecto:

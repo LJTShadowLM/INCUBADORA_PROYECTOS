@@ -1,4 +1,3 @@
-<!-- templates/emprendedores/sesiones/crear_sesion.html -->
 {% extends "emprendedores/base.html" %}
 
 {% block content %}
@@ -9,7 +8,7 @@
                 <div class="card-header bg-primary text-white">
                     <h4 class="mb-0">
                         <i class="bi bi-calendar-plus me-2"></i>
-                        Proponer Nueva Sesión de Mentoría
+                        Agendar Nueva Sesión de Mentoría
                     </h4>
                 </div>
                 <div class="card-body">
@@ -17,6 +16,16 @@
                         Proyecto: <strong>{{ proyecto.nombre_proyecto }}</strong> |
                         Emprendedor: <strong>{{ proyecto.nombre_completo }}</strong>
                     </p>
+                    
+                    <!-- MOSTRAR ERRORES GENERALES DEL FORMULARIO -->
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <strong>Error:</strong>
+                            {{ form.non_field_errors }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endif %}
                     
                     <form method="post">
                         {% csrf_token %}
@@ -26,9 +35,17 @@
                                 <div class="mb-3">
                                     {{ form.fecha_propuesta.label_tag }}
                                     {{ form.fecha_propuesta }}
+                                    
+                                    <!-- MOSTRAR ERROR DE FECHA MÁS VISIBLE -->
                                     {% if form.fecha_propuesta.errors %}
-                                        <div class="text-danger">{{ form.fecha_propuesta.errors }}</div>
+                                        <div class="alert alert-danger mt-2" role="alert">
+                                            <i class="bi bi-exclamation-circle-fill me-2"></i>
+                                            {{ form.fecha_propuesta.errors|first }}
+                                        </div>
                                     {% endif %}
+                                    <small class="form-text text-muted">
+                                        <i class="bi bi-info-circle"></i> Seleccione una fecha y hora futura
+                                    </small>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -36,7 +53,7 @@
                                     {{ form.duracion.label_tag }}
                                     {{ form.duracion }}
                                     {% if form.duracion.errors %}
-                                        <div class="text-danger">{{ form.duracion.errors }}</div>
+                                        <div class="text-danger mt-1">{{ form.duracion.errors }}</div>
                                     {% endif %}
                                 </div>
                             </div>
@@ -48,7 +65,7 @@
                                     {{ form.formato.label_tag }}
                                     {{ form.formato }}
                                     {% if form.formato.errors %}
-                                        <div class="text-danger">{{ form.formato.errors }}</div>
+                                        <div class="text-danger mt-1">{{ form.formato.errors }}</div>
                                     {% endif %}
                                 </div>
                             </div>
@@ -57,7 +74,7 @@
                                     {{ form.tipo.label_tag }}
                                     {{ form.tipo }}
                                     {% if form.tipo.errors %}
-                                        <div class="text-danger">{{ form.tipo.errors }}</div>
+                                        <div class="text-danger mt-1">{{ form.tipo.errors }}</div>
                                     {% endif %}
                                 </div>
                             </div>
@@ -68,7 +85,10 @@
                                 {{ form.enlace_virtual.label_tag }}
                                 {{ form.enlace_virtual }}
                                 {% if form.enlace_virtual.errors %}
-                                    <div class="text-danger">{{ form.enlace_virtual.errors }}</div>
+                                    <div class="alert alert-warning mt-1" role="alert">
+                                        <i class="bi bi-exclamation-triangle me-2"></i>
+                                        {{ form.enlace_virtual.errors|first }}
+                                    </div>
                                 {% endif %}
                             </div>
                         </div>
@@ -78,7 +98,10 @@
                                 {{ form.direccion_presencial.label_tag }}
                                 {{ form.direccion_presencial }}
                                 {% if form.direccion_presencial.errors %}
-                                    <div class="text-danger">{{ form.direccion_presencial.errors }}</div>
+                                    <div class="alert alert-warning mt-1" role="alert">
+                                        <i class="bi bi-exclamation-triangle me-2"></i>
+                                        {{ form.direccion_presencial.errors|first }}
+                                    </div>
                                 {% endif %}
                             </div>
                         </div>
@@ -87,7 +110,7 @@
                             {{ form.objetivo.label_tag }}
                             {{ form.objetivo }}
                             {% if form.objetivo.errors %}
-                                <div class="text-danger">{{ form.objetivo.errors }}</div>
+                                <div class="text-danger mt-1">{{ form.objetivo.errors }}</div>
                             {% endif %}
                         </div>
                         
@@ -95,7 +118,7 @@
                             {{ form.agenda.label_tag }}
                             {{ form.agenda }}
                             {% if form.agenda.errors %}
-                                <div class="text-danger">{{ form.agenda.errors }}</div>
+                                <div class="text-danger mt-1">{{ form.agenda.errors }}</div>
                             {% endif %}
                         </div>
                         
@@ -103,7 +126,7 @@
                             {{ form.materiales_requeridos.label_tag }}
                             {{ form.materiales_requeridos }}
                             {% if form.materiales_requeridos.errors %}
-                                <div class="text-danger">{{ form.materiales_requeridos.errors }}</div>
+                                <div class="text-danger mt-1">{{ form.materiales_requeridos.errors }}</div>
                             {% endif %}
                         </div>
                         
@@ -111,16 +134,16 @@
                             {{ form.es_material_obligatorio }}
                             {{ form.es_material_obligatorio.label_tag }}
                             {% if form.es_material_obligatorio.errors %}
-                                <div class="text-danger">{{ form.es_material_obligatorio.errors }}</div>
+                                <div class="text-danger mt-1">{{ form.es_material_obligatorio.errors }}</div>
                             {% endif %}
                         </div>
                         
                         <div class="d-flex justify-content-between">
-                            <button type="submit" name="guardar_borrador" value="true" class="btn btn-secondary">
-                                <i class="bi bi-save"></i> Guardar como Borrador
-                            </button>
+                            <a href="{% url 'panel_gestor' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
                             <button type="submit" name="enviar_propuesta" value="true" class="btn btn-primary">
-                                <i class="bi bi-send"></i> Enviar Propuesta
+                                <i class="bi bi-send"></i> Agendar Sesión
                             </button>
                         </div>
                     </form>

@@ -26,7 +26,7 @@ urlpatterns = [
     path('panel/admin/registrar-gestor/', 
          views.registrar_gestor, name='registrar_gestor'),
     
-    # Nuevas URLs para administrador (gestor)
+    # URLs para administrador (gestor)
     path('panel/admin/gestor/<int:gestor_id>/eliminar/', 
          views.eliminar_gestor, name='eliminar_gestor'),
     path('panel/admin/gestor/<int:gestor_id>/editar/', 
@@ -56,6 +56,7 @@ urlpatterns = [
     path('panel/admin/gestor/<int:gestor_id>/ver/', views.ver_gestor, name='ver_gestor'),
     path('panel/admin/emprendedor/<int:emprendedor_id>/ver/', views.ver_emprendedor, name='ver_emprendedor'),
     path('proyecto/<int:proyecto_id>/solicitar-sesion/', views.solicitar_sesion_emprendedor, name='solicitar_sesion_emprendedor'),
+    path('sesiones/<int:sesion_id>/cancelar/', views.cancelar_sesion, name='cancelar_sesion'),
     
     # URLs para mensajes
     path('mensajes/', views.ver_mensajes, name='ver_mensajes'),

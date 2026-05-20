@@ -131,13 +131,13 @@ class SesionMentoria(models.Model):
         ('hibrido', 'Híbrido'),
     )
     
-    TIPOS = (
+    TIPOS = {
         ('revision_inicial', 'Revisión Inicial'),
         ('seguimiento', 'Seguimiento'),
         ('presentacion_avance', 'Presentación de Avance'),
         ('problematica', 'Resolución de Problemática'),
         ('otro', 'Otro'),
-    )
+    }
     
     proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE, related_name='sesiones')
     creada_por = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sesiones_creadas')

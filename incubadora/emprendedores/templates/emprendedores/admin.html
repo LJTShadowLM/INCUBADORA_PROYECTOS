@@ -161,9 +161,9 @@
 <div class="modal fade" id="mensajeModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title">Enviar Mensaje</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="post" action="{% url 'enviar_mensaje' %}">
                 {% csrf_token %}
@@ -213,10 +213,10 @@
     </div>
 </div>
 
-<!-- Solicitudes de la Ventanilla Única (sin cambios, se conserva) -->
+<!-- Solicitudes de la Ventanilla Única -->
 <div class="container mt-4 mb-5">
     <div class="card shadow">
-        <div class="card-header d-flex justify-content-between align-items-center" style="background:#003366; color:white;">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
                 <i class="bi bi-building me-2"></i>Solicitudes de la Ventanilla Única
             </h5>
@@ -308,12 +308,12 @@
     </div>
 </div>
 
-<!-- Modales de detalle por solicitud (sin cambios, se conserva) -->
+<!-- Modales de detalle por solicitud -->
 {% for sol in solicitudes_ventanilla %}
 <div class="modal fade" id="verSolicitudModal{{ sol.id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header" style="background:#003366; color:white;">
+            <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title">
                     <i class="bi bi-file-earmark-text me-2"></i>{{ sol.numero_expediente }} — {{ sol.get_tipo_display }}
                 </h5>
